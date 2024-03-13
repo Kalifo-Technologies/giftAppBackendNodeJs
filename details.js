@@ -31,9 +31,16 @@
 
 // ADD PRODUCT METHOD:POST  =============PRODUCT
 ("http://localhost:2030/api/v1/products");
+// Add TO CART METHOD :POST
+"http://localhost:2030/api/v1/products/add-to-cart/65ea0d50fa28de92097a9079"
+// GET ALL CARTS METHOD:GET
+"http://localhost:2030/api/v1/products/add-to-cart/get-allCarts"
+// REMOVE CART ITEMS METHOD:POST 
+"http://localhost:2030/api/v1/products/add-to-cart/65ea0d50fa28de92097a9079/remove"
+
 
 // ===============ADMIN SIDE & USERSIDE===========
-// GET ALL PRODUCTS METHOD:GET
+c// GET ALL PRODUCTS METHOD:GET
 ("http://localhost:2030/api/v1/products");
 // GET SINGLE PRODUCT METHOD:GET
 "http://localhost:2030/api/v1/products/65ea0d50fa28de92097a9079"

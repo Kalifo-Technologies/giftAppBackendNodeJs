@@ -9,7 +9,7 @@ import Product from "../model/Product.js";
 export const createProductCtrl = asyncHandler(async (req, res) => {
   const { name, description, category, sizes, colors, price, totalQty, brand } =
   req.body;
-  console.log(req.body);
+  // console.log(req.body);
   const convertedImgs = req.files?.map((file) => file?.path);
   //Product exists
   const productExists = await Product.findOne({ name });
@@ -160,24 +160,35 @@ export const getProductsCtrl = asyncHandler(async (req, res) => {
 // @desc    Get single product
 // @route   GET /api/products/:id
 // @access  Public
-
 export const getProductCtrl = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id).populate({
-    path: "reviews",
-    populate: {
-      path: "user",
-      select: "fullname",
-    },
-  });
-  if (!product) {
-    throw new Error("Prouduct not found");
+  try {
+    const product = await Product.findById(req.params.id).populate({
+      path: "reviews",
+      populate: {
+        path: "user",
+        select: "fullname",
+      },
+    });
+    if (!product) {
+      res.status(404).json({
+        status: "error",
+        message: "Product not found",
+      });
+      return;
+    }
+    res.status(200).json({
+      status: "success",
+      message: "Product fetched successfully",
+      product,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
   }
-  res.json({
-    status: "success",
-    message: "Product fetched successfully",
-    product,
-  });
 });
+
 
 // @desc    update  product
 // @route   PUT /api/products/:id/update
