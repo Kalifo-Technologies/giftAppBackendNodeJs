@@ -39,8 +39,12 @@
 "http://localhost:2030/api/v1/products/add-to-cart/65ea0d50fa28de92097a9079/remove"
 
 
+// GET ALL WISHLIST ITEMS FOR A SPECIFIC USER ,METHOD:GET
+"http://localhost:2030/api/v1/products/wishlist/get-all-wishlists"
+// ADD TO WISHLIST METHOD:POST
+"http://localhost:2030/api/v1/products/wishlist/65ea0d5afa28de92097a907f"
 // ===============ADMIN SIDE & USERSIDE===========
-c// GET ALL PRODUCTS METHOD:GET
+// GET ALL PRODUCTS METHOD:GET
 ("http://localhost:2030/api/v1/products");
 // GET SINGLE PRODUCT METHOD:GET
 "http://localhost:2030/api/v1/products/65ea0d50fa28de92097a9079"

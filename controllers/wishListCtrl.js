@@ -1,36 +1,34 @@
 import expressAsyncHandler from "express-async-handler";
 import Product from "../model/Product.js";
-import Cart from "../model/Cart.js";
+import WishList from "../model/Wishlist.js";
 
-export const getAllCarts = expressAsyncHandler(async (req, res) => {
+export const getUserWishlists = expressAsyncHandler(async (req, res) => {
   try {
     const userId = req.userAuthId;
-    const carts = await Cart.find({ user: userId });
+    const wishlists = await WishList.find({userId });
+    console.log(wishlists);
 
-    if (!carts || carts.length === 0) {
+    if (!wishlists || wishlists.WishList === 0) {
       return res.status(404).json({
         status: "error",
-        message: "Cart is empty",
+        message: "WishList is empty",
       });
     }
 
     res.status(200).json({
       status: "success",
-      message: "Carts retrieved successfully",
-      carts,
+      message: "WishList retrieved successfully",
+      wishlists,
     });
   } catch (error) {
     console.error(error);
-
-    // Handle any errors
     res.status(500).json({
       status: "error",
       message: "Internal server error",
     });
   }
 });
-
-export const addToCart = expressAsyncHandler(async (req, res) => {
+export const addToWishList = expressAsyncHandler(async (req, res) => {
   try {
     const productId = req.params.id;
     const quantity = req.body.quantity || 1;
@@ -43,38 +41,33 @@ export const addToCart = expressAsyncHandler(async (req, res) => {
       });
     }
 
-    let cart = await Cart.findOne({ user: req.userAuthId });
-    if (!cart) {
-      cart = new Cart({
+    let wishlist = await WishList.findOne({ user: req.userAuthId });
+    if (!wishlist) {
+      wishlist = new WishList({
         user: req.userAuthId,
         items: [],
       });
     }
 
-    const existingItemIndex = cart.items.findIndex((item) =>
+    const existingItemIndex = wishlist.items.findIndex((item) =>
       item.product.equals(productId)
     );
 
     if (existingItemIndex !== -1) {
-      // If the product already exists in the cart, you might want to handle this scenario
       return res.status(400).json({
         status: "error",
-        message: "Product already exists in cart",
+        message: "Product already exists in wishlist",
       });
     }
 
-    // If the product doesn't exist in the cart, add it
-    cart.items.push({
-      product: productId,
-      quantity: quantity,
-    });
+    wishlist.items.push({ product: productId, quantity });
 
-    await cart.save();
+    await wishlist.save();
 
     res.status(200).json({
       status: "success",
-      message: "Item added to cart successfully",
-      cart,
+      message: "Item added to wishlist successfully",
+      wishlist,
     });
   } catch (error) {
     console.error(error);
@@ -93,10 +86,9 @@ export const addToCart = expressAsyncHandler(async (req, res) => {
   }
 });
 
-export const removeFromCart = expressAsyncHandler(async (req, res) => {
+export const removeFromWishList = expressAsyncHandler(async (req, res) => {
   try {
     const productId = req.params.id;
-    console.log(req.userAuthId);
 
     const product = await Product.findById(productId);
     if (!product) {
@@ -106,33 +98,32 @@ export const removeFromCart = expressAsyncHandler(async (req, res) => {
       });
     }
 
-    let cart = await Cart.findOne({ user: req.userAuthId });
-    if (!cart) {
+    let wishList = await WishList.findOne({ user: req.userAuthId });
+    if (!wishList) {
       return res.status(404).json({
         status: "error",
         message: "Cart not found for the user",
       });
     }
 
-    const existingItemIndex = cart.items.findIndex((item) =>
+    const existingItemIndex = wishList.items.findIndex((item) =>
       item.product.equals(productId)
     );
     if (existingItemIndex === -1) {
       return res.status(404).json({
         status: "error",
-        message: "Product is not in the cart",
+        message: "Product is not in the wishList",
       });
     }
 
-    // Remove the specific item from the cart
-    cart.items.splice(existingItemIndex, 1);
+    wishList.items.splice(existingItemIndex, 1);
 
-    await cart.save();
+    await wishList.save();
 
     res.status(200).json({
       status: "success",
       message: "Item removed from cart successfully",
-      cart,
+      wishList,
     });
   } catch (error) {
     console.error(error);
