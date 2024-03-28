@@ -37,13 +37,21 @@ export const registerUserCtrl = asyncHandler(async (req, res) => {
       email,
       phoneNumber,
       password: hashedPassword,
-      confirmPassword: hashedPassword, 
+      confirmPassword: hashedPassword,
     });
-
+    console.log('====================================');
+    console.log("user:::::",user);
+    console.log('====================================');
+    const userData = {
+      username: user.name,
+      email:user.email,
+      password: user.password,
+      phoneNumber:user.phoneNumber
+    };
     res.status(201).json({
       status: "success",
       message: "User Registered Successfully",
-      data: user,
+      data: userData,
     });
   } catch (error) {
     console.error(error);
@@ -85,8 +93,6 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
     });
   }
 });
-
-
 
 // @desc    Get user profile
 // @route   GET /api/v1/users/profile
