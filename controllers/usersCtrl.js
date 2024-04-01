@@ -9,9 +9,19 @@ import { verifyToken } from "../utils/verifyToken.js";
 // @route   POST /api/v1/users/register
 // @access  Private/Admin
 
+
+
 export const registerUserCtrl = asyncHandler(async (req, res) => {
   try {
-    const { name, email, phoneNumber, password, confirmPassword } = req.body;
+    // console.log(req.body);
+
+    const { userName, email, phoneNumber, password, confirmPassword } = req.body;
+
+    // console.log("Name:", userName);
+    // console.log("Email:", email);
+    // console.log("Phone Number:", phoneNumber);
+    // console.log("Password:", password);
+    // console.log("Confirm Password:", confirmPassword);
 
     if (password !== confirmPassword) {
       return res.status(400).json({
@@ -33,20 +43,21 @@ export const registerUserCtrl = asyncHandler(async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({
-      name,
+      userName,
       email,
       phoneNumber,
       password: hashedPassword,
       confirmPassword: hashedPassword,
     });
     console.log('====================================');
-    console.log("user:::::",user);
+    console.log("user:::::", user);
     console.log('====================================');
     const userData = {
-      username: user.name,
-      email:user.email,
+      username: user.userName,
+      email: user.email,
       password: user.password,
-      phoneNumber:user.phoneNumber
+      confirmPassword: user.confirmPassword,
+      phoneNumber: user.phoneNumber
     };
     res.status(201).json({
       status: "success",
@@ -62,6 +73,7 @@ export const registerUserCtrl = asyncHandler(async (req, res) => {
     });
   }
 });
+
 
 // @desc    Login user
 // @route   POST /api/v1/users/login
