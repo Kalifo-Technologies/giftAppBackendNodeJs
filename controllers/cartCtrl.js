@@ -7,12 +7,15 @@ export const getAllCarts = expressAsyncHandler(async (req, res) => {
     const userId = req.userAuthId;
     const carts = await Cart.find({ user: userId });
 
-    if (!carts || carts.length === 0) {
-      return res.status(404).json({
-        status: "error",
-        message: "Cart is empty",
-      });
-    }
+    // if (!carts || carts.length === 0) {
+    //   return res.status(404).json({
+    //     status: "error",
+    //     message: "Cart is empty",
+    //   });
+    // }
+    console.log('====================================');
+    console.log(carts);
+    console.log('====================================');
 
     res.status(200).json({
       status: "success",
