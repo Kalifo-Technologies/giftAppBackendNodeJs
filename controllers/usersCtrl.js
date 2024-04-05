@@ -156,9 +156,31 @@ export const updateShippingAddresctrl = asyncHandler(async (req, res) => {
     }
   );
   res.json({
-  
-      shippingAddress: user.shippingAddress
-  
+    shippingAddress: user.shippingAddress,
   });
 });
 
+// @desc    get user shipping address
+// @route   PUT /api/v1/users/get/shipping
+// @access  Private
+export const getShippingAddressCtrl = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.userAuthId);
+  if (!user) {
+    return res.status(404).json({
+      status: "error",
+      message: "User not found",
+    });
+  }
+
+  if (!user.hasShippingAddress) {
+    return res.status(404).json({
+      status: "error",
+      message: "Shipping address not found for this user",
+    });
+  }
+  const shippingAddressArray = [user.shippingAddress];
+
+  res.json({
+    shippingAddressArray,
+  });
+});

@@ -4,6 +4,7 @@ import {
   loginUserCtrl,
   getUserProfileCtrl,
   updateShippingAddresctrl,
+  getShippingAddressCtrl,
 
 } from "../controllers/usersCtrl.js";
 import { isLoggedIn } from "../middlewares/isLoggedIn.js";
@@ -14,5 +15,6 @@ userRoutes.post("/register", registerUserCtrl);
 userRoutes.post("/login", loginUserCtrl);
 userRoutes.get("/profile", isLoggedIn, getUserProfileCtrl);
 userRoutes.put("/update/shipping", isLoggedIn, updateShippingAddresctrl);
+userRoutes.get("/get/shipping", isLoggedIn, getShippingAddressCtrl);
 
 export default userRoutes;
