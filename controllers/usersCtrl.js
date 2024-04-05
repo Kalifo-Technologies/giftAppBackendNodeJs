@@ -9,13 +9,12 @@ import { verifyToken } from "../utils/verifyToken.js";
 // @route   POST /api/v1/users/register
 // @access  Private/Admin
 
-
-
 export const registerUserCtrl = asyncHandler(async (req, res) => {
   try {
     // console.log(req.body);
 
-    const { userName, email, phoneNumber, password, confirmPassword } = req.body;
+    const { userName, email, phoneNumber, password, confirmPassword } =
+      req.body;
 
     // console.log("Name:", userName);
     // console.log("Email:", email);
@@ -49,15 +48,15 @@ export const registerUserCtrl = asyncHandler(async (req, res) => {
       password: hashedPassword,
       confirmPassword: hashedPassword,
     });
-    console.log('====================================');
-    console.log("user:::::", user);
-    console.log('====================================');
+    // console.log('====================================');
+    // console.log("user:::::", user);
+    // console.log('====================================');
     const userData = {
       username: user.userName,
       email: user.email,
       password: user.password,
       confirmPassword: user.confirmPassword,
-      phoneNumber: user.phoneNumber
+      phoneNumber: user.phoneNumber,
     };
     res.status(201).json({
       status: "success",
@@ -73,7 +72,6 @@ export const registerUserCtrl = asyncHandler(async (req, res) => {
     });
   }
 });
-
 
 // @desc    Login user
 // @route   POST /api/v1/users/login
@@ -130,27 +128,27 @@ export const getUserProfileCtrl = asyncHandler(async (req, res) => {
 
 export const updateShippingAddresctrl = asyncHandler(async (req, res) => {
   const {
-    firstName,
-    lastName,
-    address,
-    city,
-    postalCode,
-    province,
+    name,
     phone,
-    country,
+    postalCode,
+    state,
+    city,
+    houseNumber,
+    roadName,
+    isSelected,
   } = req.body;
   const user = await User.findByIdAndUpdate(
     req.userAuthId,
     {
       shippingAddress: {
-        firstName,
-        lastName,
-        address,
-        city,
-        postalCode,
-        province,
+        name,
         phone,
-        country,
+        postalCode,
+        state,
+        city,
+        houseNumber,
+        roadName,
+        isSelected,
       },
       hasShippingAddress: true,
     },

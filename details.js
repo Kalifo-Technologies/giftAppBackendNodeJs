@@ -8,16 +8,16 @@
 // header/auth:token
 // body:{
 
-// firstName:string
-//     lastName:string,
-//     address:string,
-//     city:string,
-//     postalCode:string,
-//     province:string,
-//     phone:string,
-//     country:string,
-// }
-("http://localhost:2030/api/v1/users/update/shipping");
+//   name,
+//   phone,
+//   postalCode,
+//   state,
+//   city,
+//   houseNumber,
+//   roadName,
+//   isSelected,
+
+  ("http://localhost:2030/api/v1/users/update/shipping");
 
 // ===============ADMIN SIDE===========
 // CREATE CATEGORY METHOD :POST  =============CATEGORY

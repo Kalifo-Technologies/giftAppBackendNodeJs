@@ -44,32 +44,30 @@ const UserShema = new Schema(
       default: false,
     },
     shippingAddress: {
-      name: {
+      firstName: {
         type: String,
       },
-      phone: {
+      lastName: {
         type: String,
       },
-     
-      postalCode: {
-        type: String,
-      },
-      state: {
+      address: {
         type: String,
       },
       city: {
         type: String,
       },
-      houseNumber: {
+      postalCode: {
         type: String,
       },
-      roadName: {
+      province: {
         type: String,
       },
-      isSelected:{
-        type:Boolean,
-        default:false
-      }
+      country: {
+        type: String,
+      },
+      phone: {
+        type: String,
+      },
     },
   },
   {
