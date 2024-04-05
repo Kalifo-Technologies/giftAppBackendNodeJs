@@ -23,8 +23,13 @@ const ProductSchema = new Schema(
     },
     sizes: {
       type: [String],
-      enum: ["S", "M", "L", "XL", "XXL"],
+      // enum: ["S", "M", "L", "XL", "XXL"],
       required: true,
+      isSelected:{
+        type:Boolean,
+        default:false
+      }
+
     },
     colors: {
       type: [String],
@@ -36,6 +41,7 @@ const ProductSchema = new Schema(
       required: true,
       ref: "User",
     },
+    
 
     images: [
       {
@@ -53,6 +59,22 @@ const ProductSchema = new Schema(
     ],
 
     price: {
+      type: Number,
+      required: true,
+    },
+    originalPrice:{
+      type: Number,
+      required: true,
+    },
+    discount:{
+      type: Number,
+      required: true,
+    },
+    details:{
+      type: String,
+      required: true,
+    },
+    starPoints:{
       type: Number,
       required: true,
     },
