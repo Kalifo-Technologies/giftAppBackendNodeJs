@@ -125,7 +125,6 @@ export const getUserProfileCtrl = asyncHandler(async (req, res) => {
 // @desc    Update user shipping address
 // @route   PUT /api/v1/users/update/shipping
 // @access  Private
-
 export const updateShippingAddresctrl = asyncHandler(async (req, res) => {
   const {
     name,
@@ -157,8 +156,9 @@ export const updateShippingAddresctrl = asyncHandler(async (req, res) => {
     }
   );
   res.json({
-    status: "success",
-    message: "User shipping address updated successfully",
-    user,
+  
+      shippingAddress: user.shippingAddress
+  
   });
 });
+
