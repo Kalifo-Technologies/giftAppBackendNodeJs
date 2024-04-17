@@ -41,6 +41,9 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
   } = req.body;
   console.log(req.body);
   const convertedImgs = req.files?.map((file) => file?.path);
+  console.log('====================================');
+  console.log(convertedImgs);
+  console.log('====================================');
   //Product exists
   const productExists = await Product.findOne({ name });
   if (productExists) {
