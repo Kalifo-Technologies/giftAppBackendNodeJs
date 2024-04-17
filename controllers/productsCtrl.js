@@ -198,9 +198,12 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
 // });
 
 export const getProductsCtrl = asyncHandler(async (req, res) => {
-  console.log(req.query);
+  // console.log(req.query);
   //query
   let productQuery = Product.find();
+  // console.log('=============product query=======================');
+  // console.log();
+  // console.log('====================================');
 
   //search by name
   if (req.query.name) {
@@ -274,12 +277,11 @@ export const getProductsCtrl = asyncHandler(async (req, res) => {
     };
   }
 
-  //await the query
   const products = await productQuery
     .populate("reviews")
     .select(
-      "id name description brand category sizes colors images reviews price originalPrice discount details starPoints totalQty totalSold totalReviews averageRating"
-    ); // Select only name, description, and price fields
+      "name description brand sizes colors images reviews price originalPrice discount details starPoints totalQty totalSold totalReviews averageRating"
+    );
 
   // console.log('====================================');
   // console.log(products);

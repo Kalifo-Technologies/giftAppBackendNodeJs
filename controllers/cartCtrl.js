@@ -13,9 +13,9 @@ export const getAllCarts = expressAsyncHandler(async (req, res) => {
     //     message: "Cart is empty",
     //   });
     // }
-    console.log('====================================');
-    console.log(carts);
-    console.log('====================================');
+    // console.log('====================================');
+    // console.log(carts);
+    // console.log('====================================');
 
     res.status(200).json({
       status: "success",

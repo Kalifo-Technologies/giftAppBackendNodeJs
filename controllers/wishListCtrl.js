@@ -1,24 +1,34 @@
 import expressAsyncHandler from "express-async-handler";
 import Product from "../model/Product.js";
 import WishList from "../model/Wishlist.js";
-
 export const getUserWishlists = expressAsyncHandler(async (req, res) => {
   try {
     const userId = req.userAuthId;
-    const wishlists = await WishList.find({userId });
-    console.log(wishlists);
 
-    if (!wishlists || wishlists.WishList === 0) {
+    const wishlists = await WishList.find({ user: userId });
+
+    if (!wishlists || wishlists.length === 0) {
       return res.status(404).json({
         status: "error",
         message: "WishList is empty",
       });
     }
 
+    const formattedWishlists = wishlists.map(wishlist => ({
+      // _id: wishlist._id,
+      user: wishlist.user,
+      items: wishlist.items.map(item => ({
+        product: item.product,
+
+        // _id: item._id,
+      })),
+      // __v: wishlist.__v,
+    }));
+
     res.status(200).json({
       status: "success",
       message: "WishList retrieved successfully",
-      wishlists,
+      wishlists: formattedWishlists,
     });
   } catch (error) {
     console.error(error);
@@ -28,6 +38,7 @@ export const getUserWishlists = expressAsyncHandler(async (req, res) => {
     });
   }
 });
+
 export const addToWishList = expressAsyncHandler(async (req, res) => {
   try {
     const productId = req.params.id;
@@ -67,7 +78,7 @@ export const addToWishList = expressAsyncHandler(async (req, res) => {
     res.status(200).json({
       status: "success",
       message: "Item added to wishlist successfully",
-      wishlist,
+      // wishlist,
     });
   } catch (error) {
     console.error(error);
