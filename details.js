@@ -19,6 +19,9 @@
 
   ("http://localhost:2030/api/v1/users/update/shipping");
 
+
+
+// ============================================================================================================================
 // ===============ADMIN SIDE===========
 // CREATE CATEGORY METHOD :POST  =============CATEGORY
 // header/auth:token
@@ -73,6 +76,36 @@
 
 ("http://localhost:2030/api/v1/brands/65e22224bf2814a6e9cd7bd9");
 
+// add coupon method :post
+// {
+//   "code": "abdc",
+//   "startDate": "2024-04-19",
+//   "endDate": "2024-04-29",
+//   "discount": 50
+// }
+
+// http://localhost:2030/api/v1/coupons
+
+
+// get all coupons method : get 
+// http://localhost:2030/api/v1/coupons
+
+// update coupon method :put
+
+// http://localhost:2030/api/v1/coupons/update/66213130a5b2bafcc6a2426c
+// {
+//   "code": "prcoupon",
+//   "startDate": "2024-04-19",
+//   "endDate": "2024-04-29",
+//   "discount": 50
+// }
+// delete a coupon method : delete
+// http://localhost:2030/api/v1/coupons/delete/66213130a5b2bafcc6a2426c
+
+
+
+
+// ================================================================================================================================
 // ADD PRODUCT METHOD:POST  =============PRODUCT
 //  header/auth:token
 
@@ -95,3 +128,12 @@
 );
 // GET SINGLE PRODUCT METHOD:GET
 ("http://localhost:2030/api/v1/products/65ea0d50fa28de92097a9079");
+
+
+// ===========================================================================================
+
+// get shipping address  method : get 
+
+"http://localhost:2030/api/v1/users/get/shipping"
+
+

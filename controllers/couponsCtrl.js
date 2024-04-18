@@ -6,7 +6,7 @@ import Coupon from "../model/Coupon.js";
 
 export const createCouponCtrl = asyncHandler(async (req, res) => {
   const { code, startDate, endDate, discount } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   //check if admin
   //check if coupon already exists
   const couponsExists = await Coupon.findOne({
@@ -19,7 +19,6 @@ export const createCouponCtrl = asyncHandler(async (req, res) => {
   if (isNaN(discount)) {
     throw new Error("Discount value must be a number");
   }
-  //create coupon
   const coupon = await Coupon.create({
     code: code,
     startDate,
@@ -27,26 +26,47 @@ export const createCouponCtrl = asyncHandler(async (req, res) => {
     discount,
     user: req.userAuthId,
   });
-  //send the response
+
+  const filteredCoupon = {
+    code: coupon.code,
+    startDate: coupon.startDate,
+    endDate: coupon.endDate,
+    discount: coupon.discount,
+    isExpired: coupon.isExpired,
+    daysLeft: coupon.daysLeft,
+  };
+
   res.status(201).json({
     status: "success",
     message: "Coupon created successfully",
-    coupon,
+    coupon: filteredCoupon,
   });
 });
+
+
 
 // @desc    Get all coupons
 // @route   GET /api/v1/coupons
 // @access  Private/Admin
-
 export const getAllCouponsCtrl = asyncHandler(async (req, res) => {
   const coupons = await Coupon.find();
+  const filteredCoupons = coupons.map(coupon => ({
+    code: coupon.code,
+    startDate: coupon.startDate,
+    endDate: coupon.endDate,
+    discount: coupon.discount,
+    isExpired: coupon.isExpired,
+    daysLeft: coupon.daysLeft
+  }));
+
+  // Send the response with the filtered coupons
   res.status(200).json({
     status: "success",
     message: "All coupons",
-    coupons,
+    coupons: filteredCoupons
   });
 });
+
 // @desc    Get single coupon
 // @route   GET /api/v1/coupons/:id
 // @access  Private/Admin

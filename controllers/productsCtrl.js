@@ -7,23 +7,6 @@ import Product from "../model/Product.js";
 // @route   POST /api/v1/products
 // @access  Private/Admin
 
-// required this.mainImage,
-// required this.subImages,
-// required this.giftName,==
-// required this.description,==
-// required this.originalPrice,
-// required this.price,==
-// required this.discount,
-// required this.ratings,
-// required this.starPoints,
-// required this.sizes,==
-// required this.selectedSize,
-// required this.details,
-// // required this.categories,==
-// // required this.specifiedFor,
-// // required this.isInCart,
-// // required this.isInWishlist,
-// required this.quantity,
 export const createProductCtrl = asyncHandler(async (req, res) => {
   const {
     name,
@@ -41,9 +24,6 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
   } = req.body;
   console.log(req.body);
   const convertedImgs = req.files?.map((file) => file?.path);
-  console.log('====================================');
-  console.log(convertedImgs);
-  console.log('====================================');
   //Product exists
   const productExists = await Product.findOne({ name });
   if (productExists) {
@@ -85,9 +65,6 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     details,
     starPoints,
   });
-  // console.log('====================================');
-  // console.log("product from post request",product);
-  // console.log('====================================');
   //push the product into category
   // categoryFound.products.push(product._id);
   //resave
