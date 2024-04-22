@@ -112,18 +112,18 @@ ProductSchema.virtual("totalReviews").get(function () {
   return product?.reviews?.length;
 });
 //average Rating
-ProductSchema.virtual("averageRating").get(function () {
-  let ratingsTotal = 0;
-  const product = this;
-  product?.reviews?.forEach((review) => {
-    ratingsTotal += review?.rating;
-  });
-  //calc average rating
-  const averageRating = Number(ratingsTotal / product?.reviews?.length).toFixed(
-    1
-  );
-  return averageRating;
-});
+// ProductSchema.virtual("averageRating").get(function () {
+//   let ratingsTotal = 0;
+//   const product = this;
+//   product?.reviews?.forEach((review) => {
+//     ratingsTotal += review?.rating;
+//   });
+//   //calc average rating
+//   const averageRating = Number(ratingsTotal / product?.reviews?.length).toFixed(
+//     1
+//   );
+//   return averageRating;
+// });
 const Product = mongoose.model("Product", ProductSchema);
 
 export default Product;
