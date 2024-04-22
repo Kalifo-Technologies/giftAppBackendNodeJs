@@ -186,12 +186,6 @@ export const getProductsCtrl = asyncHandler(async (req, res) => {
     .select(
       "name description brand sizes colors images reviews price originalPrice discount details starPoints totalQty totalSold allRatings customerRatings"
     );
-  // const products=await productQuery;
-
-  // console.log('====================================');
-  // console.log(products);
-  // console.log('====================================');
-
   res.json({
     status: "success",
     total,
@@ -207,13 +201,16 @@ export const getProductsCtrl = asyncHandler(async (req, res) => {
 // @access  Public
 export const getProductCtrl = asyncHandler(async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate({
-      path: "reviews",
-      populate: {
-        path: "user",
-        select: "fullname",
-      },
-    });
+    const product = await Product.findById(req.params.id)
+      .select('-createdAt -updatedAt -__v -user ')
+      .populate({
+        path: "reviews",
+        populate: {
+          path: "user",
+          select: "fullname",
+        },
+      });
+
     if (!product) {
       res.status(404).json({
         status: "error",
@@ -221,6 +218,7 @@ export const getProductCtrl = asyncHandler(async (req, res) => {
       });
       return;
     }
+
     res.status(200).json({
       status: "success",
       message: "Product fetched successfully",
@@ -233,6 +231,7 @@ export const getProductCtrl = asyncHandler(async (req, res) => {
     });
   }
 });
+
 
 // @desc    update  product
 // @route   PUT /api/products/:id/update
