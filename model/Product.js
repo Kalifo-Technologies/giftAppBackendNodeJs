@@ -25,11 +25,10 @@ const ProductSchema = new Schema(
       type: [String],
       // enum: ["S", "M", "L", "XL", "XXL"],
       required: true,
-      isSelected:{
-        type:Boolean,
-        default:false
-      }
-
+      isSelected: {
+        type: Boolean,
+        default: false,
+      },
     },
     colors: {
       type: [String],
@@ -41,7 +40,6 @@ const ProductSchema = new Schema(
       required: true,
       ref: "User",
     },
-    
 
     images: [
       {
@@ -53,32 +51,32 @@ const ProductSchema = new Schema(
 
     reviews: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Review",
+        type: String,
+        required:true
       },
     ],
 
     price: {
       type: Number,
-      required: true,
+      required: false,
     },
-    originalPrice:{
+
+    originalPrice: {
       type: Number,
       required: true,
     },
-    discount:{
+    discount: {
       type: Number,
-      required: true,
+      required: false,
     },
-    details:{
+    details: {
       type: String,
       required: true,
     },
-    starPoints:{
+    starPoints: {
       type: Number,
       required: true,
     },
-
     totalQty: {
       type: Number,
       required: true,
@@ -87,6 +85,14 @@ const ProductSchema = new Schema(
       type: Number,
       required: true,
       default: 0,
+    },
+    allRatings: {
+      type: Number,
+      required: true,
+    },
+    customerRatings: {
+      type: Number,
+      required: true,
     },
   },
   {
