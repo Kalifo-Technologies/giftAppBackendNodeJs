@@ -113,7 +113,7 @@ export const removeFromWishList = expressAsyncHandler(async (req, res) => {
     if (!wishList) {
       return res.status(404).json({
         status: "error",
-        message: "Cart not found for the user",
+        message: "wishlist not found for the user",
       });
     }
 
@@ -133,8 +133,8 @@ export const removeFromWishList = expressAsyncHandler(async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      message: "Item removed from cart successfully",
-      wishList,
+      message: "Item removed from wishList successfully",
+      // wishList,
     });
   } catch (error) {
     console.error(error);

@@ -30,6 +30,15 @@ const ProductSchema = new Schema(
         default: false,
       },
     },
+    // selectedSizes: {
+    //   type: [String],
+    //   // enum: ["S", "M", "L", "XL", "XXL"],
+    //   required: true,
+    //   isSelected: {
+    //     type: Boolean,
+    //     default: false,
+    //   },
+    // },
     colors: {
       type: [String],
       required: true,
