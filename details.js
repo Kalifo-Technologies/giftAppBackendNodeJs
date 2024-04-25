@@ -136,6 +136,19 @@
 
 // ===========================================================================================
 
+// add shipping address method:post
+// {
+  //   "name":"pr3",
+  //    "phone":"5454545454",
+  //    "postalCode":"4545454545",
+  //    "state":"fjkfjslkfs",
+  //    "city":"vhsjhks",
+  //    "houseNumber":"dsfsfsff",
+  //    "roadName":"hdfkjsf"
+  // }
+// http://localhost:2030/api/v1/users/add/shipping
+// 
+
 // get shipping address  method : get 
 
 "http://localhost:2030/api/v1/users/get/shipping"
