@@ -1,7 +1,35 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-const UserShema = new Schema(
+const AddressSchema = new Schema({
+  name: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  postalCode: {
+    type: String,
+  },
+  state: {
+    type: String,
+  },
+  city: {
+    type: String,
+  },
+  houseNumber: {
+    type: String,
+  },
+  roadName: {
+    type: String,
+  },
+  isSelected: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const UserSchema = new Schema(
   {
     userName: {
       type: String,
@@ -43,41 +71,14 @@ const UserShema = new Schema(
       type: Boolean,
       default: false,
     },
-    shippingAddress: {
-      name: {
-        type: String,
-      },
-      phone: {
-        type: String,
-      },
-     
-      postalCode: {
-        type: String,
-      },
-      state: {
-        type: String,
-      },
-      city: {
-        type: String,
-      },
-      houseNumber: {
-        type: String,
-      },
-      roadName: {
-        type: String,
-      },
-      isSelected:{
-        type:Boolean,
-        default:false
-      }
-    },
+    shippingAddresses: [AddressSchema],
   },
   {
     timestamps: true,
   }
 );
 
-//compile the schema to model
-const User = mongoose.model("User", UserShema);
+// Compile the schema to model
+const User = mongoose.model("User", UserSchema);
 
 export default User;

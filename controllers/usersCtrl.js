@@ -122,6 +122,55 @@ export const getUserProfileCtrl = asyncHandler(async (req, res) => {
   });
 });
 
+
+
+export const addShippingAddressCtrl = asyncHandler(async (req, res) => {
+  const {
+    name,
+    phone,
+    postalCode,
+    state,
+    city,
+    houseNumber,
+    roadName,
+    isSelected,
+  } = req.body;
+
+  const newAddress = {
+    name,
+    phone,
+    postalCode,
+    state,
+    city,
+    houseNumber,
+    roadName,
+    isSelected,
+  };
+
+  const user = await User.findById(req.userAuthId);
+
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  // Push the new address into the shippingAddresses array
+  user.shippingAddresses.push(newAddress);
+
+  // Set hasShippingAddress to true if it's not already set
+  user.hasShippingAddress = true;
+
+  // Save the updated user
+  const updatedUser = await user.save();
+
+  res.json({
+    shippingAddress: updatedUser.shippingAddresses,
+  });
+});
+
+
+
+
 // @desc    Update user shipping address
 // @route   PUT /api/v1/users/update/shipping
 // @access  Private
