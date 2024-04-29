@@ -57,6 +57,13 @@ const ProductSchema = new Schema(
         required: true,
       },
     ],
+    mainImages: [
+      {
+        type: String,
+        default: "https://picsum/photos/200/300",
+        required: false,
+      },
+    ],
 
     reviews: [
       {

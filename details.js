@@ -155,5 +155,3 @@
 
 
 
-
-// sample commit products fetch

@@ -15,7 +15,20 @@ import Product from "../model/Product.js";
 // @desc    Create new product
 // @route   POST /api/v1/products
 // @access  Private/Admin
-
+export const createMainImage = asyncHandler(async (req, res) => {
+  console.log("====================================");
+  console.log("entered.....");
+  console.log("====================================");
+  const mainImgs = req.files?.map((file) => file?.path);
+  const product = await Product.create({
+    mainImages: mainImgs,
+  });
+  res.json({
+    status: "success",
+    message: "main image created successfully",
+    product,
+  });
+});
 export const createProductCtrl = asyncHandler(async (req, res) => {
   const {
     name,
@@ -108,7 +121,7 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
 export const getProductsCtrl = asyncHandler(async (req, res) => {
   //query
   let productQuery = Product.find();
-  
+
   //search by name
   if (req.query.name) {
     productQuery = productQuery.find({
@@ -202,7 +215,7 @@ export const getProductsCtrl = asyncHandler(async (req, res) => {
 export const getProductCtrl = asyncHandler(async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .select('-createdAt -updatedAt -__v -user ')
+      .select("-createdAt -updatedAt -__v -user ")
       .populate({
         path: "reviews",
         populate: {
@@ -231,7 +244,6 @@ export const getProductCtrl = asyncHandler(async (req, res) => {
     });
   }
 });
-
 
 // @desc    update  product
 // @route   PUT /api/products/:id/update
