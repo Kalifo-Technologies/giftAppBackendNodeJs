@@ -17,7 +17,8 @@ productsRouter.post(
   "/",
   isLoggedIn,
   isAdmin,
-  upload.array("files"),
+  upload.array("regularImages"),
+  // upload.array("mainImages"),
   createProductCtrl
 );
 productsRouter.post("/addmain-image",isLoggedIn,isAdmin,upload.array("file"),createMainImage)

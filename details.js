@@ -17,7 +17,7 @@
 //   roadName,
 //   isSelected,
 
-  ("http://localhost:2030/api/v1/users/update/shipping");
+  ("http://localhost:2030/api/v1/users/update/shipping/6630fd9da25a2b56fc3dc318");
 
 
 

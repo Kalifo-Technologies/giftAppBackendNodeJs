@@ -29,7 +29,93 @@ export const createMainImage = asyncHandler(async (req, res) => {
     product,
   });
 });
+// export const createProductCtrl = asyncHandler(async (req, res) => {
+//   const {
+//     name,
+//     description,
+//     brand,
+//     category,
+//     sizes,
+//     colors,
+//     reviews,
+//     price,
+//     originalPrice,
+//     discount,
+//     details,
+//     starPoints,
+//     totalQty,
+//     totalSold,
+//     allRatings,
+//     customerRatings,
+//   } = req.body;
+//   // console.log("req.body=====",req.body);
+//   const convertedImgs = req.files?.map((file) => file?.path);
+//   //Product exists
+//   const productExists = await Product.findOne({ name });
+//   if (productExists) {
+//     throw new Error("Product Already Exists");
+//   }
+//   //find the brand
+//   const brandFound = await Brand.findOne({
+//     name: "addidas",
+//   });
+
+//   if (!brandFound) {
+//     throw new Error(
+//       "Brand not found, please create brand first or check brand name"
+//     );
+//   }
+//   //find the category
+//   // const categoryFound = await Category.findOne({
+//   //   name: category,
+//   // });
+//   // if (!categoryFound) {
+//   //   throw new Error(
+//   //     "Category not found, please create category first or check category name"
+//   //   );
+//   // }
+//   //create the product
+//   const product = await Product.create({
+//     name,
+//     description,
+//     brand,
+//     category,
+//     sizes,
+//     colors,
+//     reviews,
+//     price,
+//     originalPrice,
+//     discount,
+//     details,
+//     starPoints,
+//     totalQty,
+//     totalSold,
+//     allRatings,
+//     customerRatings,
+//     user: req.userAuthId,
+//     images: convertedImgs,
+//   });
+//   // console.log('====================================');
+//   // console.log(product);
+//   // console.log('====================================');
+//   //push the product into category
+//   // categoryFound.products.push(product._id);
+//   //resave
+//   // await categoryFound.save();
+//   //push the product into brand
+//   brandFound.products.push(product._id);
+//   //resave
+//   await brandFound.save();
+//   //send response
+//   res.json({
+//     status: "success",
+//     message: "Product created successfully",
+//     product,
+//   });
+// });
+
 export const createProductCtrl = asyncHandler(async (req, res) => {
+  console.log("11111111111111111111111111111111");
   const {
     name,
     description,
@@ -48,33 +134,31 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     allRatings,
     customerRatings,
   } = req.body;
-  // console.log("req.body=====",req.body);
-  const convertedImgs = req.files?.map((file) => file?.path);
-  //Product exists
+  console.log("22222222222222222222222222222");
+
+  // Handle regular images
+  const regularImages = req.files
+    .filter((file) => file.fieldname === "regularImages")
+    .map((file) => file.path);
+  const mainImages = req.files
+    .filter((file) => file.fieldname === "mainImages")
+    .map((file) => file.path);
+
+  // Product exists
   const productExists = await Product.findOne({ name });
   if (productExists) {
     throw new Error("Product Already Exists");
   }
-  //find the brand
-  const brandFound = await Brand.findOne({
-    name: "addidas",
-  });
 
+  // Find the brand
+  const brandFound = await Brand.findOne({ name: "addidas" });
   if (!brandFound) {
     throw new Error(
       "Brand not found, please create brand first or check brand name"
     );
   }
-  //find the category
-  // const categoryFound = await Category.findOne({
-  //   name: category,
-  // });
-  // if (!categoryFound) {
-  //   throw new Error(
-  //     "Category not found, please create category first or check category name"
-  //   );
-  // }
-  //create the product
+
+  // Create the product
   const product = await Product.create({
     name,
     description,
@@ -94,19 +178,14 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     customerRatings,
     user: req.userAuthId,
     images: convertedImgs,
+    mainImages: mainImages, // Assign main images
   });
-  // console.log('====================================');
-  // console.log(product);
-  // console.log('====================================');
-  //push the product into category
-  // categoryFound.products.push(product._id);
-  //resave
-  // await categoryFound.save();
-  //push the product into brand
+
+  // Push the product into brand
   brandFound.products.push(product._id);
-  //resave
   await brandFound.save();
-  //send response
+
+  // Send response
   res.json({
     status: "success",
     message: "Product created successfully",

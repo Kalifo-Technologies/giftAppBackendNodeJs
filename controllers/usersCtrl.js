@@ -81,6 +81,7 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
     const userFound = await User.findOne({ email });
+    console.log("userFound::", userFound);
 
     if (userFound && (await bcrypt.compare(password, userFound?.password))) {
       res.json({
@@ -122,8 +123,6 @@ export const getUserProfileCtrl = asyncHandler(async (req, res) => {
   });
 });
 
-
-
 export const addShippingAddressCtrl = asyncHandler(async (req, res) => {
   const {
     name,
@@ -154,13 +153,10 @@ export const addShippingAddressCtrl = asyncHandler(async (req, res) => {
     return;
   }
 
-  // Push the new address into the shippingAddresses array
   user.shippingAddresses.push(newAddress);
 
-  // Set hasShippingAddress to true if it's not already set
   user.hasShippingAddress = true;
 
-  // Save the updated user
   const updatedUser = await user.save();
 
   res.json({
@@ -168,45 +164,87 @@ export const addShippingAddressCtrl = asyncHandler(async (req, res) => {
   });
 });
 
+export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const {
+      name,
+      phone,
+      postalCode,
+      state,
+      city,
+      houseNumber,
+      roadName,
+      isSelected,
+    } = req.body;
 
+    const newAddress = {
+      name,
+      phone,
+      postalCode,
+      state,
+      city,
+      houseNumber,
+      roadName,
+      isSelected,
+    };
 
+    console.log("newAddress==", newAddress);
 
-// @desc    Update user shipping address
-// @route   PUT /api/v1/users/update/shipping
-// @access  Private
-export const updateShippingAddresctrl = asyncHandler(async (req, res) => {
-  const {
-    name,
-    phone,
-    postalCode,
-    state,
-    city,
-    houseNumber,
-    roadName,
-    isSelected,
-  } = req.body;
-  const user = await User.findByIdAndUpdate(
-    req.userAuthId,
-    {
-      shippingAddress: {
-        name,
-        phone,
-        postalCode,
-        state,
-        city,
-        houseNumber,
-        roadName,
-        isSelected,
-      },
-      hasShippingAddress: true,
-    },
-    {
-      new: true,
+    const user = await User.findById(req.userAuthId);
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
     }
-  );
-  res.json({
-    shippingAddress: user.shippingAddress,
-  });
+
+    if (!user.hasShippingAddress) {
+      return res.status(404).json({
+        status: "error",
+        message: "Shipping address not found for this user",
+      });
+    }
+
+    let found = false;
+    user.shippingAddresses.forEach((address) => {
+      console.log("Address ID:", address._id.toString());
+      if (userId === address._id.toString()) {
+        address.name = newAddress.name;
+        address.phone = newAddress.phone;
+        address.postalCode = newAddress.postalCode;
+        address.state = newAddress.state;
+        address.city = newAddress.city;
+        address.houseNumber = newAddress.houseNumber;
+        address.roadName = newAddress.roadName;
+        address.isSelected = newAddress.isSelected;
+        found = true;
+      }
+    });
+
+    if (!found) {
+      return res.status(404).json({
+        status: "error",
+        message: "Address ID not found for this user",
+      });
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      status: "success",
+      message: "Shipping address updated successfully",
+      updatedShippingAddress: newAddress,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "error",
+      message: "Internal Server Error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
+  }
 });
 
 // @desc    get user shipping address
@@ -227,7 +265,7 @@ export const getShippingAddressCtrl = asyncHandler(async (req, res) => {
       message: "Shipping address not found for this user",
     });
   }
-  const shippingAddressArray = [user.shippingAddress];
+  const shippingAddressArray = [user.shippingAddresses];
 
   res.json({
     shippingAddressArray,
