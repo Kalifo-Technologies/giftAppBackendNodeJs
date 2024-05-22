@@ -14,21 +14,16 @@ export const getUserWishlists = expressAsyncHandler(async (req, res) => {
       });
     }
 
-    const formattedWishlists = wishlists.map(wishlist => ({
-      // _id: wishlist._id,
-      user: wishlist.user,
-      items: wishlist.items.map(item => ({
+    const formattedWishlists = wishlists.map((wishlist) =>
+      wishlist.items.map((item) => ({
         product: item.product,
-
-        // _id: item._id,
-      })),
-      // __v: wishlist.__v,
-    }));
+      }))
+    );
 
     res.status(200).json({
       status: "success",
       message: "WishList retrieved successfully",
-      wishlists: formattedWishlists,
+      wishlists: formattedWishlists.flat(),
     });
   } catch (error) {
     console.error(error);

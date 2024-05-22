@@ -2,6 +2,37 @@ import expressAsyncHandler from "express-async-handler";
 import Product from "../model/Product.js";
 import Cart from "../model/Cart.js";
 
+// export const getAllCarts = expressAsyncHandler(async (req, res) => {
+//   try {
+//     const userId = req.userAuthId;
+//     const carts = await Cart.find({ user: userId });
+
+//     // if (!carts || carts.length === 0) {
+//     //   return res.status(404).json({
+//     //     status: "error",
+//     //     message: "Cart is empty",
+//     //   });
+//     // }
+//     console.log("====================================");
+//     console.log(carts);
+//     console.log("====================================");
+
+//     res.status(200).json({
+//       status: "success",
+//       message: "Carts retrieved successfully",
+//       carts,
+//     });
+//   } catch (error) {
+//     console.error(error);
+
+//     // Handle any errors
+//     res.status(500).json({
+//       status: "error",
+//       message: "Internal server error",
+//     });
+//   }
+// });
+
 export const getAllCarts = expressAsyncHandler(async (req, res) => {
   try {
     const userId = req.userAuthId;
@@ -13,14 +44,21 @@ export const getAllCarts = expressAsyncHandler(async (req, res) => {
     //     message: "Cart is empty",
     //   });
     // }
-    // console.log('====================================');
-    // console.log(carts);
-    // console.log('====================================');
+
+    // Flatten the items from carts array
+    const formattedCarts = carts.reduce((acc, cart) => {
+      acc.push(...cart.items.map(item => ({
+        product: item.product,
+        quantity: item.quantity,
+        _id: item._id,
+      })));
+      return acc;
+    }, []);
 
     res.status(200).json({
       status: "success",
       message: "Carts retrieved successfully",
-      carts,
+      carts: formattedCarts,
     });
   } catch (error) {
     console.error(error);
@@ -32,7 +70,6 @@ export const getAllCarts = expressAsyncHandler(async (req, res) => {
     });
   }
 });
-
 export const addToCart = expressAsyncHandler(async (req, res) => {
   try {
     const productId = req.params.id;
@@ -59,25 +96,21 @@ export const addToCart = expressAsyncHandler(async (req, res) => {
     );
 
     if (existingItemIndex !== -1) {
-      // If the product already exists in the cart, you might want to handle this scenario
-      return res.status(400).json({
-        status: "error",
-        message: "Product already exists in cart",
+      // If the product already exists in the cart, increase the quantity
+      cart.items[existingItemIndex].quantity += quantity;
+    } else {
+      // If the product is not in the cart, add it as a new item
+      cart.items.push({
+        product: productId,
+        quantity: quantity,
       });
     }
-
-    // If the product doesn't exist in the cart, add it
-    cart.items.push({
-      product: productId,
-      quantity: quantity,
-    });
 
     await cart.save();
 
     res.status(200).json({
       status: "success",
       message: "Item added to cart successfully",
-      cart,
     });
   } catch (error) {
     console.error(error);
@@ -95,6 +128,7 @@ export const addToCart = expressAsyncHandler(async (req, res) => {
     }
   }
 });
+
 
 export const removeFromCart = expressAsyncHandler(async (req, res) => {
   try {
@@ -127,7 +161,6 @@ export const removeFromCart = expressAsyncHandler(async (req, res) => {
       });
     }
 
-    // Remove the specific item from the cart
     cart.items.splice(existingItemIndex, 1);
 
     await cart.save();
@@ -135,7 +168,7 @@ export const removeFromCart = expressAsyncHandler(async (req, res) => {
     res.status(200).json({
       status: "success",
       message: "Item removed from cart successfully",
-      cart,
+      // cart,
     });
   } catch (error) {
     console.error(error);

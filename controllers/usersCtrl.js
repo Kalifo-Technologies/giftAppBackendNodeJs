@@ -189,8 +189,6 @@ export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
       isSelected,
     };
 
-    console.log("newAddress==", newAddress);
-
     const user = await User.findById(req.userAuthId);
 
     if (!user) {
