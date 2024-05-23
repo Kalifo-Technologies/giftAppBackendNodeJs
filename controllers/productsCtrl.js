@@ -115,7 +115,6 @@ export const createMainImage = asyncHandler(async (req, res) => {
 // });
 
 export const createProductCtrl = asyncHandler(async (req, res) => {
-  console.log("11111111111111111111111111111111");
   const {
     name,
     description,
@@ -134,9 +133,7 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     allRatings,
     customerRatings,
   } = req.body;
-  console.log("22222222222222222222222222222");
 
-  // Handle regular images
   const regularImages = req.files
     .filter((file) => file.fieldname === "regularImages")
     .map((file) => file.path);
@@ -144,13 +141,11 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     .filter((file) => file.fieldname === "mainImages")
     .map((file) => file.path);
 
-  // Product exists
   const productExists = await Product.findOne({ name });
   if (productExists) {
     throw new Error("Product Already Exists");
   }
 
-  // Find the brand
   const brandFound = await Brand.findOne({ name: "addidas" });
   if (!brandFound) {
     throw new Error(
@@ -158,7 +153,6 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     );
   }
 
-  // Create the product
   const product = await Product.create({
     name,
     description,
@@ -177,15 +171,18 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     allRatings,
     customerRatings,
     user: req.userAuthId,
-    images: convertedImgs,
-    mainImages: mainImages, // Assign main images
+    images: mainImages,
   });
 
-  // Push the product into brand
   brandFound.products.push(product._id);
-  await brandFound.save();
+  console.log("====================================");
+  console.log(product);
+  console.log("====================================");
+  const { mainImages: _, ...modifiedProduct } = product; // Exclude mainImages
 
-  // Send response
+  console.log("modisied......", modifiedProduct);
+
+  await brandFound.save();
   res.json({
     status: "success",
     message: "Product created successfully",

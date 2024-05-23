@@ -5,23 +5,10 @@ import generateToken from "../utils/generateToken.js";
 import { getTokenFromHeader } from "../utils/getTokenFromHeader.js";
 import { verifyToken } from "../utils/verifyToken.js";
 
-// @desc    Register user
-// @route   POST /api/v1/users/register
-// @access  Private/Admin
-
 export const registerUserCtrl = asyncHandler(async (req, res) => {
   try {
-    // console.log(req.body);
-
     const { userName, email, phoneNumber, password, confirmPassword } =
       req.body;
-
-    // console.log("Name:", userName);
-    // console.log("Email:", email);
-    // console.log("Phone Number:", phoneNumber);
-    // console.log("Password:", password);
-    // console.log("Confirm Password:", confirmPassword);
-
     if (password !== confirmPassword) {
       return res.status(400).json({
         status: "error",
@@ -48,9 +35,7 @@ export const registerUserCtrl = asyncHandler(async (req, res) => {
       password: hashedPassword,
       confirmPassword: hashedPassword,
     });
-    // console.log('====================================');
-    // console.log("user:::::", user);
-    // console.log('====================================');
+
     const userData = {
       username: user.userName,
       email: user.email,
@@ -72,10 +57,6 @@ export const registerUserCtrl = asyncHandler(async (req, res) => {
     });
   }
 });
-
-// @desc    Login user
-// @route   POST /api/v1/users/login
-// @access  Public
 
 export const loginUserCtrl = asyncHandler(async (req, res) => {
   try {
@@ -105,9 +86,6 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get user profile
-// @route   GET /api/v1/users/profile
-// @access  Private
 export const getUserProfileCtrl = asyncHandler(async (req, res) => {
   const user = await User.findById(req.userAuthId).populate("orders");
   if (!user) {
@@ -132,7 +110,7 @@ export const addShippingAddressCtrl = asyncHandler(async (req, res) => {
     city,
     houseNumber,
     roadName,
-    isSelected,
+    isSelected: isSelectedFromRequest,
   } = req.body;
 
   const newAddress = {
@@ -143,7 +121,7 @@ export const addShippingAddressCtrl = asyncHandler(async (req, res) => {
     city,
     houseNumber,
     roadName,
-    isSelected,
+    isSelected: isSelectedFromRequest,
   };
 
   const user = await User.findById(req.userAuthId);
@@ -154,29 +132,30 @@ export const addShippingAddressCtrl = asyncHandler(async (req, res) => {
   }
 
   user.shippingAddresses.push(newAddress);
-
   user.hasShippingAddress = true;
 
   const updatedUser = await user.save();
 
+  // Get the last added address
+  const addedAddress =
+    updatedUser.shippingAddresses[updatedUser.shippingAddresses.length - 1];
+
+  // Remove the _id and isSelected fields from the response
+  const { _id, isSelected, ...addressWithoutIdAndSelected } =
+    addedAddress.toObject();
+
   res.json({
-    shippingAddress: updatedUser.shippingAddresses,
+    status: "success",
+    message: "Shipping address added successfully",
+    data: addressWithoutIdAndSelected,
   });
 });
 
 export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
   try {
     const userId = req.params.id;
-    const {
-      name,
-      phone,
-      postalCode,
-      state,
-      city,
-      houseNumber,
-      roadName,
-      isSelected,
-    } = req.body;
+    const { name, phone, postalCode, state, city, houseNumber, roadName } =
+      req.body;
 
     const newAddress = {
       name,
@@ -186,7 +165,6 @@ export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
       city,
       houseNumber,
       roadName,
-      isSelected,
     };
 
     const user = await User.findById(req.userAuthId);
@@ -208,32 +186,23 @@ export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
     let found = false;
     user.shippingAddresses.forEach((address) => {
       console.log("Address ID:", address._id.toString());
-      if (userId === address._id.toString()) {
-        address.name = newAddress.name;
-        address.phone = newAddress.phone;
-        address.postalCode = newAddress.postalCode;
-        address.state = newAddress.state;
-        address.city = newAddress.city;
-        address.houseNumber = newAddress.houseNumber;
-        address.roadName = newAddress.roadName;
-        address.isSelected = newAddress.isSelected;
-        found = true;
-      }
+
+      address.name = newAddress.name;
+      address.phone = newAddress.phone;
+      address.postalCode = newAddress.postalCode;
+      address.state = newAddress.state;
+      address.city = newAddress.city;
+      address.houseNumber = newAddress.houseNumber;
+      address.roadName = newAddress.roadName;
     });
 
-    if (!found) {
-      return res.status(404).json({
-        status: "error",
-        message: "Address ID not found for this user",
-      });
-    }
-
     const updatedUser = await user.save();
+    const { isSelected, ...responseAddress } = newAddress;
 
     res.json({
       status: "success",
       message: "Shipping address updated successfully",
-      updatedShippingAddress: newAddress,
+      updatedShippingAddress: responseAddress,
     });
   } catch (error) {
     console.error(error);
@@ -245,9 +214,6 @@ export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    get user shipping address
-// @route   PUT /api/v1/users/get/shipping
-// @access  Private
 export const getShippingAddressCtrl = asyncHandler(async (req, res) => {
   const user = await User.findById(req.userAuthId);
   if (!user) {
@@ -263,7 +229,7 @@ export const getShippingAddressCtrl = asyncHandler(async (req, res) => {
       message: "Shipping address not found for this user",
     });
   }
-  const shippingAddressArray = [user.shippingAddresses];
+  const shippingAddressArray = user.shippingAddresses;
 
   res.json({
     shippingAddressArray,
