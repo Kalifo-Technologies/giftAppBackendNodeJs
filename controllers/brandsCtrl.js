@@ -1,14 +1,9 @@
 import asyncHandler from "express-async-handler";
 import Brand from "../model/Brand.js";
 
-// @desc    Create new Brand
-// @route   POST /api/v1/brands
-// @access  Private/Admin
-
 export const createBrandCtrl = asyncHandler(async (req, res) => {
   try {
     const { name } = req.body;
-    //brand exists
     const brandFound = await Brand.findOne({ name });
     if (brandFound) {
       res.status(409).json({
@@ -17,16 +12,16 @@ export const createBrandCtrl = asyncHandler(async (req, res) => {
         code: "BRAND_ALREADY_EXISTS"
       });
     } else {
-      //create
       const brand = await Brand.create({
         name: name.toLowerCase(),
         user: req.userAuthId,
       });
+     
 
       res.json({
         status: "success",
-        message: "Brand created successfully",
-        brand,
+        message: "Brand added successfully",
+        brand: { name: brand.name },
       });
     }
   } catch (error) {
@@ -39,9 +34,7 @@ export const createBrandCtrl = asyncHandler(async (req, res) => {
 });
 
 
-// @desc    Get all brands
-// @route   GET /api/brands
-// @access  Public
+
 
 export const getAllBrandsCtrl = asyncHandler(async (req, res) => {
   try {
@@ -61,9 +54,6 @@ export const getAllBrandsCtrl = asyncHandler(async (req, res) => {
 });
 
 
-// @desc    Get single brand
-// @route   GET /api/brands/:id
-// @access  Public
 export const getSingleBrandCtrl = asyncHandler(async (req, res) => {
   try {
     const brand = await Brand.findById(req.params.id);
@@ -90,9 +80,6 @@ export const getSingleBrandCtrl = asyncHandler(async (req, res) => {
 });
 
 
-// @desc    Update brand
-// @route   PUT /api/brands/:id
-// @access  Private/Admin
 export const updateBrandCtrl = asyncHandler(async (req, res) => {
   try {
     const { name } = req.body;
@@ -127,9 +114,6 @@ export const updateBrandCtrl = asyncHandler(async (req, res) => {
 });
 
 
-// @desc    delete brand
-// @route   DELETE /api/brands/:id
-// @access  Private/Admin
 export const deleteBrandCtrl = asyncHandler(async (req, res) => {
   try {
     const deletedBrand = await Brand.findByIdAndDelete(req.params.id);

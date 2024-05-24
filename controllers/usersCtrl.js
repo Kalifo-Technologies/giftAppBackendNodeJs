@@ -62,7 +62,6 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
     const userFound = await User.findOne({ email });
-    console.log("userFound::", userFound);
 
     if (userFound && (await bcrypt.compare(password, userFound?.password))) {
       res.json({
@@ -136,11 +135,9 @@ export const addShippingAddressCtrl = asyncHandler(async (req, res) => {
 
   const updatedUser = await user.save();
 
-  // Get the last added address
   const addedAddress =
     updatedUser.shippingAddresses[updatedUser.shippingAddresses.length - 1];
 
-  // Remove the _id and isSelected fields from the response
   const { _id, isSelected, ...addressWithoutIdAndSelected } =
     addedAddress.toObject();
 
@@ -168,7 +165,7 @@ export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
     };
 
     const user = await User.findById(req.userAuthId);
-
+    
     if (!user) {
       return res.status(404).json({
         status: "error",
@@ -234,4 +231,60 @@ export const getShippingAddressCtrl = asyncHandler(async (req, res) => {
   res.json({
     shippingAddressArray,
   });
+});
+
+
+export const deleteShippingAddressCtrl = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.params.id;
+    console.log('====================================');
+    console.log(userId);
+    console.log('====================================');
+    const addressId = req.params.addressId; // Assuming addressId is passed as a parameter
+    console.log('====================================');
+    console.log(addressId);
+    console.log('====================================');
+    // const user = await User.findById(userId);
+
+    // if (!user) {
+    //   return res.status(404).json({
+    //     status: "error",
+    //     message: "User not found",
+    //   });
+    // }
+
+    // if (!user.hasShippingAddress) {
+    //   return res.status(404).json({
+    //     status: "error",
+    //     message: "Shipping address not found for this user",
+    //   });
+    // }
+
+    // Find the index of the address to be deleted
+    const addressIndex = user.shippingAddresses.findIndex(address => address._id.toString() === addressId);
+    
+    if (addressIndex === -1) {
+      return res.status(404).json({
+        status: "error",
+        message: "Shipping address not found",
+      });
+    }
+
+    // Remove the address from the array
+    user.shippingAddresses.splice(addressIndex, 1);
+
+    const updatedUser = await user.save();
+
+    res.json({
+      status: "success",
+      message: "Shipping address deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "error",
+      message: "Internal Server Error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
+  }
 });

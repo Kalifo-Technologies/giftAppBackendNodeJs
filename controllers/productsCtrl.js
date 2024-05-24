@@ -2,23 +2,7 @@ import asyncHandler from "express-async-handler";
 import Brand from "../model/Brand.js";
 import Category from "../model/Category.js";
 import Product from "../model/Product.js";
-
-// original price===
-// price optional===
-// discount optional==
-// all ratings  int
-// customer ratings optional double
-// star points   ==double
-// selected size
-// details string
-
-// @desc    Create new product
-// @route   POST /api/v1/products
-// @access  Private/Admin
 export const createMainImage = asyncHandler(async (req, res) => {
-  console.log("====================================");
-  console.log("entered.....");
-  console.log("====================================");
   const mainImgs = req.files?.map((file) => file?.path);
   const product = await Product.create({
     mainImages: mainImgs,
@@ -29,90 +13,6 @@ export const createMainImage = asyncHandler(async (req, res) => {
     product,
   });
 });
-// export const createProductCtrl = asyncHandler(async (req, res) => {
-//   const {
-//     name,
-//     description,
-//     brand,
-//     category,
-//     sizes,
-//     colors,
-//     reviews,
-//     price,
-//     originalPrice,
-//     discount,
-//     details,
-//     starPoints,
-//     totalQty,
-//     totalSold,
-//     allRatings,
-//     customerRatings,
-//   } = req.body;
-//   // console.log("req.body=====",req.body);
-//   const convertedImgs = req.files?.map((file) => file?.path);
-//   //Product exists
-//   const productExists = await Product.findOne({ name });
-//   if (productExists) {
-//     throw new Error("Product Already Exists");
-//   }
-//   //find the brand
-//   const brandFound = await Brand.findOne({
-//     name: "addidas",
-//   });
-
-//   if (!brandFound) {
-//     throw new Error(
-//       "Brand not found, please create brand first or check brand name"
-//     );
-//   }
-//   //find the category
-//   // const categoryFound = await Category.findOne({
-//   //   name: category,
-//   // });
-//   // if (!categoryFound) {
-//   //   throw new Error(
-//   //     "Category not found, please create category first or check category name"
-//   //   );
-//   // }
-//   //create the product
-//   const product = await Product.create({
-//     name,
-//     description,
-//     brand,
-//     category,
-//     sizes,
-//     colors,
-//     reviews,
-//     price,
-//     originalPrice,
-//     discount,
-//     details,
-//     starPoints,
-//     totalQty,
-//     totalSold,
-//     allRatings,
-//     customerRatings,
-//     user: req.userAuthId,
-//     images: convertedImgs,
-//   });
-//   // console.log('====================================');
-//   // console.log(product);
-//   // console.log('====================================');
-//   //push the product into category
-//   // categoryFound.products.push(product._id);
-//   //resave
-//   // await categoryFound.save();
-//   //push the product into brand
-//   brandFound.products.push(product._id);
-//   //resave
-//   await brandFound.save();
-//   //send response
-//   res.json({
-//     status: "success",
-//     message: "Product created successfully",
-//     product,
-//   });
-// });
 
 export const createProductCtrl = asyncHandler(async (req, res) => {
   const {
@@ -134,12 +34,12 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     customerRatings,
   } = req.body;
 
-  const regularImages = req.files
-    .filter((file) => file.fieldname === "regularImages")
-    .map((file) => file.path);
-  const mainImages = req.files
-    .filter((file) => file.fieldname === "mainImages")
-    .map((file) => file.path);
+  const mainImage = req.files["mainImage"]
+    ? req.files["mainImage"][0].path
+    : null;
+  const regularImages = req.files["regularImages"]
+    ? req.files["regularImages"].map((file) => file.path)
+    : [];
 
   const productExists = await Product.findOne({ name });
   if (productExists) {
@@ -171,31 +71,31 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     allRatings,
     customerRatings,
     user: req.userAuthId,
-    images: mainImages,
+    images: regularImages,
+    mainImage: mainImage,
   });
 
   brandFound.products.push(product._id);
-  console.log("====================================");
-  console.log(product);
-  console.log("====================================");
-  const { mainImages: _, ...modifiedProduct } = product; // Exclude mainImages
-
-  console.log("modisied......", modifiedProduct);
-
   await brandFound.save();
+
+  const productResponse = product.toObject();
+  delete productResponse._id;
+  delete productResponse.user;
+  delete productResponse.mainImages;
+  delete productResponse.createdAt;
+  delete productResponse.updatedAt;
+  delete productResponse.__v;
+
+  productResponse.totalReviews = product.reviews.length;
+  let qtyLeft = 98;
+  productResponse.qtyLeft = qtyLeft;
+
   res.json({
-    status: "success",
-    message: "Product created successfully",
-    product,
+    ...productResponse,
   });
 });
 
-// @desc    Get all products
-// @route   GET /api/v1/products
-// @access  Public
-
 export const getProductsCtrl = asyncHandler(async (req, res) => {
-  //query
   let productQuery = Product.find();
 
   //search by name
@@ -273,7 +173,7 @@ export const getProductsCtrl = asyncHandler(async (req, res) => {
   const products = await productQuery
     .populate("reviews")
     .select(
-      "name description brand sizes colors images reviews price originalPrice discount details starPoints totalQty totalSold allRatings customerRatings"
+      "name description brand sizes colors images mainImage reviews price originalPrice discount details starPoints totalQty totalSold allRatings customerRatings"
     );
   res.json({
     status: "success",
@@ -285,9 +185,6 @@ export const getProductsCtrl = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get single product
-// @route   GET /api/products/:id
-// @access  Public
 export const getProductCtrl = asyncHandler(async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
@@ -321,9 +218,6 @@ export const getProductCtrl = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    update  product
-// @route   PUT /api/products/:id/update
-// @access  Private/Admin
 
 export const updateProductCtrl = asyncHandler(async (req, res) => {
   const {
@@ -337,9 +231,7 @@ export const updateProductCtrl = asyncHandler(async (req, res) => {
     totalQty,
     brand,
   } = req.body;
-  //validation
 
-  //update
   const product = await Product.findByIdAndUpdate(
     req.params.id,
     {
@@ -365,9 +257,6 @@ export const updateProductCtrl = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    delete  product
-// @route   DELETE /api/products/:id/delete
-// @access  Private/Admin
 export const deleteProductCtrl = asyncHandler(async (req, res) => {
   await Product.findByIdAndDelete(req.params.id);
   res.json({

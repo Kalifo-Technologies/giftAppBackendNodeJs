@@ -6,6 +6,7 @@ import {
   getShippingAddressCtrl,
   addShippingAddressCtrl,
   updateShippingAddressCtrl,
+  deleteShippingAddressCtrl,
 
 } from "../controllers/usersCtrl.js";
 import { isLoggedIn } from "../middlewares/isLoggedIn.js";
@@ -23,6 +24,7 @@ userRoutes.post("/add/shipping", isLoggedIn, addShippingAddressCtrl);
 userRoutes.get("/get/shipping", isLoggedIn, getShippingAddressCtrl);
 
 userRoutes.put("/update/shipping/:id", isLoggedIn,updateShippingAddressCtrl);
+userRoutes.delete("/delete/:id", isLoggedIn,deleteShippingAddressCtrl);
 
 
 export default userRoutes;

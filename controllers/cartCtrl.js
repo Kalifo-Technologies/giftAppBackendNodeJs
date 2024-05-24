@@ -1,51 +1,11 @@
 import expressAsyncHandler from "express-async-handler";
 import Product from "../model/Product.js";
 import Cart from "../model/Cart.js";
-
-// export const getAllCarts = expressAsyncHandler(async (req, res) => {
-//   try {
-//     const userId = req.userAuthId;
-//     const carts = await Cart.find({ user: userId });
-
-//     // if (!carts || carts.length === 0) {
-//     //   return res.status(404).json({
-//     //     status: "error",
-//     //     message: "Cart is empty",
-//     //   });
-//     // }
-//     console.log("====================================");
-//     console.log(carts);
-//     console.log("====================================");
-
-//     res.status(200).json({
-//       status: "success",
-//       message: "Carts retrieved successfully",
-//       carts,
-//     });
-//   } catch (error) {
-//     console.error(error);
-
-//     // Handle any errors
-//     res.status(500).json({
-//       status: "error",
-//       message: "Internal server error",
-//     });
-//   }
-// });
-
 export const getAllCarts = expressAsyncHandler(async (req, res) => {
   try {
     const userId = req.userAuthId;
     const carts = await Cart.find({ user: userId });
 
-    // if (!carts || carts.length === 0) {
-    //   return res.status(404).json({
-    //     status: "error",
-    //     message: "Cart is empty",
-    //   });
-    // }
-
-    // Flatten the items from carts array
     const formattedCarts = carts.reduce((acc, cart) => {
       acc.push(...cart.items.map(item => ({
         product: item.product,
@@ -96,10 +56,8 @@ export const addToCart = expressAsyncHandler(async (req, res) => {
     );
 
     if (existingItemIndex !== -1) {
-      // If the product already exists in the cart, increase the quantity
       cart.items[existingItemIndex].quantity += quantity;
     } else {
-      // If the product is not in the cart, add it as a new item
       cart.items.push({
         product: productId,
         quantity: quantity,
