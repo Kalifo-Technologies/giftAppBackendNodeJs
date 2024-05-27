@@ -32,6 +32,7 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     totalSold,
     allRatings,
     customerRatings,
+    tags,
   } = req.body;
 
   const mainImage = req.files["mainImage"]
@@ -70,6 +71,7 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     totalSold,
     allRatings,
     customerRatings,
+    tags,
     user: req.userAuthId,
     images: regularImages,
     mainImage: mainImage,
@@ -173,7 +175,7 @@ export const getProductsCtrl = asyncHandler(async (req, res) => {
   const products = await productQuery
     .populate("reviews")
     .select(
-      "name description brand sizes colors images mainImage reviews price originalPrice discount details starPoints totalQty totalSold allRatings customerRatings"
+      "name description brand sizes colors tags images mainImage reviews price originalPrice discount details starPoints totalQty totalSold allRatings customerRatings"
     );
   res.json({
     status: "success",
@@ -218,42 +220,128 @@ export const getProductCtrl = asyncHandler(async (req, res) => {
   }
 });
 
+// export const updateProductCtrl = asyncHandler(async (req, res) => {
+//   const {
+//     name,
+//     description,
+//     category,
+//     sizes,
+//     colors,
+//     user,
+//     price,
+//     totalQty,
+//     brand,
+//     originalPrice,
+//     discount,
+//     details,
+//     totalSold,
+//     tags,
+//     images,
+//     mainImage,
+//   } = req.body;
+//   console.log('====================================');
+//   console.log(req.body);
+//   console.log('====================================');
+
+//   const product = await Product.findByIdAndUpdate(
+//     req.params.id,
+//     {
+//       name,
+//       description,
+//       category,
+//       sizes,
+//       colors,
+//       user,
+//       price,
+//       totalQty,
+//       brand,
+//       originalPrice,
+//       discount,
+//       details,
+//       totalSold,
+//       tags,
+//       images,
+//       mainImage,
+//     },
+//     {
+//       new: true,
+//       runValidators: true,
+//     }
+//   );
+//   res.json({
+//     status: "success",
+//     message: "Product updated successfully",
+//     product,
+//   });
+// });
 
 export const updateProductCtrl = asyncHandler(async (req, res) => {
   const {
     name,
     description,
+    brand,
     category,
     sizes,
     colors,
-    user,
+    reviews,
     price,
+    originalPrice,
+    discount,
+    details,
+    starPoints,
     totalQty,
-    brand,
+    totalSold,
+    allRatings,
+    customerRatings,
+    tags,
   } = req.body;
 
-  const product = await Product.findByIdAndUpdate(
-    req.params.id,
-    {
-      name,
-      description,
-      category,
-      sizes,
-      colors,
-      user,
-      price,
-      totalQty,
-      brand,
-    },
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+  const mainImage = req.files["mainImage"] ? req.files["mainImage"][0].path : null;
+  const regularImages = req.files["regularImages"] ? req.files["regularImages"].map((file) => file.path) : [];
+
+  const productId = req.params.id;
+
+  const product = await Product.findById(productId);
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  if (name) product.name = name;
+  if (description) product.description = description;
+  if (brand) product.brand = brand;
+  if (category) product.category = category;
+  if (sizes) product.sizes = sizes;
+  if (colors) product.colors = colors;
+  if (reviews) product.reviews = reviews;
+  if (price) product.price = price;
+  if (originalPrice) product.originalPrice = originalPrice;
+  if (discount) product.discount = discount;
+  if (details) product.details = details;
+  if (starPoints) product.starPoints = starPoints;
+  if (totalQty) product.totalQty = totalQty;
+  if (totalSold) product.totalSold = totalSold;
+  if (allRatings) product.allRatings = allRatings;
+  if (customerRatings) product.customerRatings = customerRatings;
+  if (tags) product.tags = tags;
+  if (mainImage) product.mainImage = mainImage;
+  if (regularImages.length > 0) product.images = regularImages;
+
+  await product.save();
+
+  const productResponse = product.toObject();
+  delete productResponse._id;
+  delete productResponse.user;
+  delete productResponse.mainImage;
+  delete productResponse.createdAt;
+  delete productResponse.updatedAt;
+  delete productResponse.__v;
+
+  productResponse.totalReviews = product.reviews.length;
+  let qtyLeft = 98;
+  productResponse.qtyLeft = qtyLeft;
+
   res.json({
-    status: "success",
-    message: "Product updated successfully",
-    product,
+    ...productResponse,
   });
 });
 

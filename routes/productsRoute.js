@@ -23,17 +23,26 @@ productsRouter.post(
   ]),
   createProductCtrl
 );
-productsRouter.post(
-  "/addmain-image",
-  isLoggedIn,
-  isAdmin,
-  upload.array("file"),
-  createMainImage
-);
+// productsRouter.post(
+//   "/addmain-image",
+//   isLoggedIn,
+//   isAdmin,
+//   upload.array("file"),
+//   createMainImage
+// );
 
 productsRouter.get("/", getProductsCtrl);
 productsRouter.get("/:id", getProductCtrl);
-productsRouter.put("/:id", isLoggedIn, isAdmin, updateProductCtrl);
+productsRouter.put(
+  "/:id",
+  isLoggedIn,
+  isAdmin,
+  upload.fields([
+    { name: "mainImage", maxCount: 1 },
+    { name: "regularImages", maxCount: 10 },
+  ]),
+  updateProductCtrl
+);
 productsRouter.delete("/:id/delete", isLoggedIn, isAdmin, deleteProductCtrl);
 
 export default productsRouter;

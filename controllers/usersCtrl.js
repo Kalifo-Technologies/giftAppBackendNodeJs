@@ -148,24 +148,77 @@ export const addShippingAddressCtrl = asyncHandler(async (req, res) => {
   });
 });
 
+// export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
+//   try {
+//     const userId = req.params.id;
+//     const { name, phone, postalCode, state, city, houseNumber, roadName } =
+//       req.body;
+
+//     const newAddress = {
+//       name,
+//       phone,
+//       postalCode,
+//       state,
+//       city,
+//       houseNumber,
+//       roadName,
+//     };
+
+//     const user = await User.findById(req.userAuthId);
+
+//     if (!user) {
+//       return res.status(404).json({
+//         status: "error",
+//         message: "User not found",
+//       });
+//     }
+
+//     if (!user.hasShippingAddress) {
+//       return res.status(404).json({
+//         status: "error",
+//         message: "Shipping address not found for this user",
+//       });
+//     }
+
+//     let found = false;
+//     user.shippingAddresses.forEach((address) => {
+//       console.log("Address ID:", address._id.toString());
+//       address.name = newAddress.name;
+//       address.phone = newAddress.phone;
+//       address.postalCode = newAddress.postalCode;
+//       address.state = newAddress.state;
+//       address.city = newAddress.city;
+//       address.houseNumber = newAddress.houseNumber;
+//       address.roadName = newAddress.roadName;
+//     });
+
+//     const updatedUser = await user.save();
+//     const { isSelected, ...responseAddress } = newAddress;
+
+//     res.json({
+//       status: "success",
+//       message: "Shipping address updated successfully",
+//       updatedShippingAddress: responseAddress,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       status: "error",
+//       message: "Internal Server Error",
+//       code: "INTERNAL_SERVER_ERROR",
+//     });
+//   }
+// });
+
 export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.userAuthId;
+    const addressId = req.params.id;
     const { name, phone, postalCode, state, city, houseNumber, roadName } =
       req.body;
 
-    const newAddress = {
-      name,
-      phone,
-      postalCode,
-      state,
-      city,
-      houseNumber,
-      roadName,
-    };
+    const user = await User.findById(userId);
 
-    const user = await User.findById(req.userAuthId);
-    
     if (!user) {
       return res.status(404).json({
         status: "error",
@@ -173,33 +226,29 @@ export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
       });
     }
 
-    if (!user.hasShippingAddress) {
+    const address = user.shippingAddresses.id(addressId);
+
+    if (!address) {
       return res.status(404).json({
         status: "error",
-        message: "Shipping address not found for this user",
+        message: "Shipping address not found",
       });
     }
 
-    let found = false;
-    user.shippingAddresses.forEach((address) => {
-      console.log("Address ID:", address._id.toString());
+    address.name = name || address.name;
+    address.phone = phone || address.phone;
+    address.postalCode = postalCode || address.postalCode;
+    address.state = state || address.state;
+    address.city = city || address.city;
+    address.houseNumber = houseNumber || address.houseNumber;
+    address.roadName = roadName || address.roadName;
 
-      address.name = newAddress.name;
-      address.phone = newAddress.phone;
-      address.postalCode = newAddress.postalCode;
-      address.state = newAddress.state;
-      address.city = newAddress.city;
-      address.houseNumber = newAddress.houseNumber;
-      address.roadName = newAddress.roadName;
-    });
-
-    const updatedUser = await user.save();
-    const { isSelected, ...responseAddress } = newAddress;
+    await user.save();
 
     res.json({
       status: "success",
       message: "Shipping address updated successfully",
-      updatedShippingAddress: responseAddress,
+      updatedShippingAddress: address,
     });
   } catch (error) {
     console.error(error);
@@ -233,51 +282,108 @@ export const getShippingAddressCtrl = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const deleteShippingAddressCtrl = asyncHandler(async (req, res) => {
   try {
-    const userId = req.params.id;
-    console.log('====================================');
-    console.log(userId);
-    console.log('====================================');
-    const addressId = req.params.addressId; // Assuming addressId is passed as a parameter
-    console.log('====================================');
-    console.log(addressId);
-    console.log('====================================');
-    // const user = await User.findById(userId);
+    const userId = req.userAuthId;
+    const addressId = req.params.id;
 
-    // if (!user) {
-    //   return res.status(404).json({
-    //     status: "error",
-    //     message: "User not found",
-    //   });
-    // }
+    const user = await User.findById(userId);
 
-    // if (!user.hasShippingAddress) {
-    //   return res.status(404).json({
-    //     status: "error",
-    //     message: "Shipping address not found for this user",
-    //   });
-    // }
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
 
-    // Find the index of the address to be deleted
-    const addressIndex = user.shippingAddresses.findIndex(address => address._id.toString() === addressId);
-    
-    if (addressIndex === -1) {
+    const address = user.shippingAddresses.id(addressId);
+
+    if (!address) {
       return res.status(404).json({
         status: "error",
         message: "Shipping address not found",
       });
     }
 
-    // Remove the address from the array
-    user.shippingAddresses.splice(addressIndex, 1);
-
-    const updatedUser = await user.save();
+    address.remove();
+    await user.save();
 
     res.json({
       status: "success",
       message: "Shipping address deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "error",
+      message: "Internal Server Error",
+      code: "INTERNAL_SERVER_ERROR",
+    });
+  }
+});
+
+export const getDefaultShippingAddressCtrl = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.userAuthId);
+  if (!user) {
+    return res.status(404).json({
+      status: "error",
+      message: "User not found",
+    });
+  }
+
+  if (!user.hasShippingAddress) {
+    return res.status(404).json({
+      status: "error",
+      message: "Shipping address not found for this user",
+    });
+  }
+  const shippingAddressArray = user.shippingAddresses;
+  const defaultShippingAddress = shippingAddressArray[0];
+
+  res.json({
+    defaultShippingAddress,
+  });
+});
+
+export const updateDefaultShippingAddressCtrl = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.userAuthId;
+    const addressId = req.params.id;
+    const { name, phone, postalCode, state, city, houseNumber, roadName } =
+      req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+
+    const address = user.shippingAddresses.id(addressId);
+
+    if (!address) {
+      return res.status(404).json({
+        status: "error",
+        message: "Shipping address not found",
+      });
+    }
+
+    address.name = name || address.name;
+    address.phone = phone || address.phone;
+    address.postalCode = postalCode || address.postalCode;
+    address.state = state || address.state;
+    address.city = city || address.city;
+    address.houseNumber = houseNumber || address.houseNumber;
+    address.roadName = roadName || address.roadName;
+
+    await user.save();
+
+    res.json({
+      status: "success",
+      message: "default address changed successfully",
+      changedShippingAddress: address,
     });
   } catch (error) {
     console.error(error);
