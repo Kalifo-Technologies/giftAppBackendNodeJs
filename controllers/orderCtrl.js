@@ -13,89 +13,129 @@ import Coupon from "../model/Coupon.js";
 //stripe instance
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
+// export const createOrderCtrl = asyncHandler(async (req, res) => {
+//   console.log("====================================");
+//   console.log("entered");
+//   console.log("====================================");
+//   // //get teh coupon
+//   // const { coupon } = req?.query;
+
+//   // const couponFound = await Coupon.findOne({
+//   //   code: coupon?.toUpperCase(),
+//   // });
+//   // if (couponFound?.isExpired) {
+//   //   throw new Error("Coupon has expired");
+//   // }
+//   // if (!couponFound) {
+//   //   throw new Error("Coupon does exists");
+//   // }
+
+//   //get discount
+//   // const discount = couponFound?.discount / 100;
+
+//   //Get the payload(customer, orderItems, shipppingAddress, totalPrice);
+//   const { orderItems, shippingAddress, totalPrice } = req.body;
+//   //Find the user
+//   const user = await User.findById(req.userAuthId);
+//   //Check if user has shipping address
+//   if (!user?.hasShippingAddress) {
+//     throw new Error("Please provide shipping address");
+//   }
+//   //Check if order is not empty
+//   if (orderItems?.length <= 0) {
+//     throw new Error("No Order Items");
+//   }
+//   //Place/create order - save into DB
+//   const order = await Order.create({
+//     user: user?._id,
+//     orderItems,
+//     shippingAddress,
+//     // totalPrice: couponFound ? totalPrice - totalPrice * discount : totalPrice,
+//     totalPrice,
+//   });
+//   let productIds = orderItems.productId;
+//   //Update the product qty
+//   const products = await Product.find({ _id: { $in: productIds } });
+
+//   orderItems?.map(async (order) => {
+//     const product = products?.find((product) => {
+//       return product?._id?.toString() === order?._id?.toString();
+//     });
+//     if (product) {
+//       product.totalSold += order.qty;
+//     }
+//     await product.save();
+//   });
+//   //push order into user
+//   user.orders.push(order?._id);
+//   await user.save();
+// });
+
 export const createOrderCtrl = asyncHandler(async (req, res) => {
-  // //get teh coupon
-  // const { coupon } = req?.query;
-
-  // const couponFound = await Coupon.findOne({
-  //   code: coupon?.toUpperCase(),
-  // });
-  // if (couponFound?.isExpired) {
-  //   throw new Error("Coupon has expired");
-  // }
-  // if (!couponFound) {
-  //   throw new Error("Coupon does exists");
-  // }
-
-  //get discount
-  // const discount = couponFound?.discount / 100;
-
-  //Get the payload(customer, orderItems, shipppingAddress, totalPrice);
   const { orderItems, shippingAddress, totalPrice } = req.body;
-  console.log(req.body);
-  //Find the user
+
   const user = await User.findById(req.userAuthId);
-  //Check if user has shipping address
   if (!user?.hasShippingAddress) {
     throw new Error("Please provide shipping address");
   }
-  //Check if order is not empty
   if (orderItems?.length <= 0) {
     throw new Error("No Order Items");
   }
-  //Place/create order - save into DB
+
   const order = await Order.create({
     user: user?._id,
     orderItems,
     shippingAddress,
-    // totalPrice: couponFound ? totalPrice - totalPrice * discount : totalPrice,
+    // totalPrice: couponFound ? totalPrice - totalPrice * discount : totalPrice, (uncomment for coupon)
     totalPrice,
   });
 
-  //Update the product qty
-  const products = await Product.find({ _id: { $in: orderItems } });
+  const productIds = orderItems.map((item) => item._id);
 
-  orderItems?.map(async (order) => {
-    const product = products?.find((product) => {
-      return product?._id?.toString() === order?._id?.toString();
-    });
+  const products = await Product.find({ _id: { $in: productIds } });
+
+  orderItems?.map(async (orderItem) => {
+    const product = products?.find(
+      (product) => product?._id?.toString() === orderItem._id?.toString()
+    );
     if (product) {
-      product.totalSold += order.qty;
+      product.totalSold += orderItem.qty;
+      await product.save();
+    } else {
+      console.error("Product not found for order item:", orderItem._id);
     }
-    await product.save();
   });
-  //push order into user
   user.orders.push(order?._id);
   await user.save();
 
-  //make payment (stripe)
-  //convert order items to have same structure that stripe need
-  const convertedOrders = orderItems.map((item) => {
-    return {
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: item?.name,
-          description: item?.description,
-        },
-        unit_amount: item?.price * 100,
-      },
-      quantity: item?.qty,
-    };
+  res.json({
+    message: "Order created successfully!",
+    deliveryAddress: order.shippingAddress,
+    products: order.orderItems,
+    totalAmount: order.totalPrice,
+    orderConfirmedDate: order.createdAt,
   });
-  const session = await stripe.checkout.sessions.create({
-    line_items: convertedOrders,
-    metadata: {
-      orderId: JSON.stringify(order?._id),
-    },
-    mode: "payment",
-    success_url: "http://localhost:3000/success",
-    cancel_url: "http://localhost:3000/cancel",
-  });
-  res.send({ url: session.url });
 });
 
-//@desc get all orders
+export const getAllordersUserCtrl = asyncHandler(async (req, res) => {
+  const userId = req.userAuthId;
+  const orders = await Order.find({ user: userId }).populate("user");
+  if (!orders) {
+    return res.status(404).json({ success: false, message: "No orders found" });
+  }
+  const listOfOrders = [];
+  orders.forEach((order) => {
+    listOfOrders.push(order._id);
+  });
+  res.json({
+    success: true,
+    message: "fetched orders successfully",
+    allOrders: listOfOrders,
+    // orders,
+  });
+});
+
+//@desc get all orders FOR ADMIN SIDE
 //@route GET /api/v1/orders
 //@access private
 
@@ -111,19 +151,36 @@ export const getAllordersCtrl = asyncHandler(async (req, res) => {
 
 //@desc get single order
 //@route GET /api/v1/orders/:id
-//@access private/admin
 
 export const getSingleOrderCtrl = asyncHandler(async (req, res) => {
-  //get the id from params
   const id = req.params.id;
-  const order = await Order.findById(id);
-  //send response
-  res.status(200).json({
-    success: true,
-    message: "Single order",
-    order,
-  });
+  try {
+    const order = await Order.findById(id).populate("orderItems");
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+    const response = {
+      id: order._id,
+      orderConfirmedDate: order.createdAt, 
+      orderShippedDate: order.createdAt || null,
+      orderDeliveredDate: order.createdAt || null, 
+      deliveryAddress: order.shippingAddress,
+      products: order.orderItems.map((item) => ({
+        productId: item.productId,
+        totalQtyBuying: item.totalQtyBuying,
+        price: item.price,
+      })),
+      totalAmount: order.totalPrice,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
 });
+
 
 //@desc update order to delivered
 //@route PUT /api/v1/orders/update/:id

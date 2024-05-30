@@ -5,12 +5,14 @@ import {
   getSingleOrderCtrl,
   updateOrderCtrl,
   getOrderStatsCtrl,
+  getAllordersUserCtrl,
 } from "../controllers/orderCtrl.js";
 import { isLoggedIn } from "../middlewares/isLoggedIn.js";
 
 const orderRouter = exppress.Router();
 
 orderRouter.post("/", isLoggedIn, createOrderCtrl);
+orderRouter.get("/", isLoggedIn, getAllordersUserCtrl);
 orderRouter.get("/", isLoggedIn, getAllordersCtrl);
 orderRouter.get("/sales/stats", isLoggedIn, getOrderStatsCtrl);
 orderRouter.put("/update/:id", isLoggedIn, updateOrderCtrl);
