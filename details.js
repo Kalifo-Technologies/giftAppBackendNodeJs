@@ -155,3 +155,31 @@
 
 
 
+// =============================================================================
+// 2/06/2024
+// place orders 
+// http://localhost:2030/api/v1/orders 
+// {
+//   "orderItems": [
+//     {
+//       "productId": "665b4238cda65685768615d8",
+//       "totalQtyBuying": 2
+//     },
+//      {
+//       "productId": "665b4218cda65685768615d2",
+//       "totalQtyBuying": 2
+//     }
+//   ],
+//   "shippingAddress": {
+//       "name": "username",
+//       "phone": "1234567",
+//       "postalCode": "4545454545",
+//       "state": "fjkfjslkfs",
+//       "city": "vhsjhks",
+//       "houseNumber": "dsfsfsff",
+//       "roadName": "hdfkjsf"
+//     }
+// }
+
+
+

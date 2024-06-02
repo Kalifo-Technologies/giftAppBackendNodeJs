@@ -72,7 +72,7 @@ const stripe = new Stripe(process.env.STRIPE_KEY);
 // });
 
 export const createOrderCtrl = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress, totalPrice } = req.body;
+  const { orderItems, shippingAddress } = req.body;
 
   const user = await User.findById(req.userAuthId);
   if (!user?.hasShippingAddress) {
@@ -81,13 +81,49 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
   if (orderItems?.length <= 0) {
     throw new Error("No Order Items");
   }
+  const orderItemsArray = [];
+  let totalAmount = 0;
+  let totalDiscount = 0;
+
+  orderItems.forEach(async (item) => {
+    try {
+      orderItemsArray.push(item);
+      console.log("item============", item.totalQtyBuying);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+    }
+  });
+
+  try {
+    for (const item of orderItems) {
+      // console.log("iiitems=====", item);
+      const product = await Product.findById(item.productId);
+
+      // Calculate discounted price per item
+      // const discountedPrice = product.price - product.discount || 0 *totalQtyBuying;
+      const discountedPrice =
+        (product.price - product.discount || 0) * item.totalQtyBuying;
+
+      // Apply discount to total amount
+      totalAmount += discountedPrice * (item.totalQtyBuying || 0);
+
+      // Update total discount (optional, if needed for separate tracking)
+      totalDiscount += product.discount * (item.totalQtyBuying || 0);
+
+      console.log("discountedPrice===", totalDiscount);
+    }
+    console.log("total============", totalAmount);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  }
 
   const order = await Order.create({
     user: user?._id,
     orderItems,
     shippingAddress,
     // totalPrice: couponFound ? totalPrice - totalPrice * discount : totalPrice, (uncomment for coupon)
-    totalPrice,
+    totalAmount,
+    totalDiscount,
   });
 
   const productIds = orderItems.map((item) => item._id);
@@ -107,6 +143,9 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
   });
   user.orders.push(order?._id);
   await user.save();
+  // console.log('===============orders=====================');
+  // console.log(order);
+  // console.log('====================================');
 
   res.json({
     message: "Order created successfully!",
@@ -114,6 +153,8 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
     products: order.orderItems,
     totalAmount: order.totalPrice,
     orderConfirmedDate: order.createdAt,
+    deliveryFee: 40.0
+
   });
 });
 
@@ -158,13 +199,15 @@ export const getSingleOrderCtrl = asyncHandler(async (req, res) => {
     const order = await Order.findById(id).populate("orderItems");
 
     if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
     const response = {
       id: order._id,
-      orderConfirmedDate: order.createdAt, 
+      orderConfirmedDate: order.createdAt,
       orderShippedDate: order.createdAt || null,
-      orderDeliveredDate: order.createdAt || null, 
+      orderDeliveredDate: order.createdAt || null,
       deliveryAddress: order.shippingAddress,
       products: order.orderItems.map((item) => ({
         productId: item.productId,
@@ -180,7 +223,6 @@ export const getSingleOrderCtrl = asyncHandler(async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 });
-
 
 //@desc update order to delivered
 //@route PUT /api/v1/orders/update/:id
