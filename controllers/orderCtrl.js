@@ -9,7 +9,7 @@ import Coupon from "../model/Coupon.js";
 //stripe instance
 const stripe = new Stripe(process.env.STRIPE_KEY);
 export const createOrderCtrl = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress } = req.body;
+  const { orderItems, shippingAddress, totalAmount,totalDiscount,deliveryFee } = req.body;
   const user = await User.findById(req.userAuthId);
   if (!user?.hasShippingAddress) {
     throw new Error("Please provide shipping address");
@@ -18,108 +18,67 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
     throw new Error("No Order Items");
   }
   const orderItemsArray = [];
-  let totalAmount = 0;
-  let totalDiscount = 0;
-  orderItems.forEach(async (item) => {
+   orderItems.forEach(async (item) => {
     try {
       orderItemsArray.push(item);
     } catch (error) {
       console.error("Error fetching product:", error);
     }
   });
-  try {
-    for (const item of orderItems) {
-      const product = await Product.findById(item.productId);
-      const discountedPrice =
-        (product.price - product.discount || 0) * item.totalQtyBuying;
-      totalAmount += discountedPrice * (item.totalQtyBuying || 0);
-      totalDiscount += product.discount * (item.totalQtyBuying || 0);
-    }
-    console.log('=============totalAmount=======================');
-    console.log(totalAmount);
-    console.log('====================================');
-  } catch (error) {
-    console.error("Error fetching products:", error);
-  }
   const order = await Order.create({
     user: user?._id,
     orderItems,
     shippingAddress,
     // totalPrice: couponFound ? totalPrice - totalPrice * discount : totalPrice, (uncomment for coupon)
-    totalAmount,
+    totalPrice: totalAmount,
     totalDiscount,
+    deliveryFee
   });
-  const productIds = orderItems.map((item) => item._id);
-  const products = await Product.find({ _id: { $in: productIds } });
-  orderItems?.map(async (orderItem) => {
-    const product = products?.find(
-      (product) => product?._id?.toString() === orderItem._id?.toString()
-    );
-    if (product) {
-      product.totalSold += orderItem.qty;
-      await product.save();
-    } else {
-      console.error("Product not found for order item:", orderItem._id);
-    }
-  });
-  console.log('====================================');
-  console.log(order);
-  console.log('====================================');
-  user.orders.push(order?._id);
-  await user.save();
+  
   res.json({
-    message: "Order created successfully!",
+    orderConfirmedDate: order.createdAt,
     deliveryAddress: order.shippingAddress,
     products: order.orderItems,
     totalAmount: totalAmount,
-    orderConfirmedDate: order.createdAt,
     deliveryFee: 40.0,
-    totalDiscount:totalDiscount
+    totalDiscount: totalDiscount,
   });
 });
 
 export const getSingleOrderCtrl = asyncHandler(async (req, res) => {
   const orderId = req.params.id;
 
-console.log('====================================');
-console.log(orderId);
-console.log('====================================');
+  console.log("===================orderId=================");
+  console.log(orderId);
+  console.log("====================================");
+
   // Validate order ID
   if (!orderId) {
     throw new Error("Please provide order ID");
   }
 
   try {
-    const order = await Order.findById(orderId)
-    console.log('====================================');
+    const order = await Order.findById(orderId);
+    console.log("=================order===================");
     console.log(order);
-    console.log('====================================');
+    console.log("====================================");
+
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
-    console.log('====================================');
-    console.log(order.orderItems);
-    console.log('====================================');
-    let orderItems=order.orderItems
 
-    try {
-      for (const item of orderItems) {
-        const product = await Product.findById(item.productId);
-        console.log('=======================product=============');
-        console.log(product);
-        console.log('====================================');
-        const discountedPrice =
-          (product.price - product.discount || 0) * item.totalQtyBuying;
-        totalAmount += discountedPrice * (item.totalQtyBuying || 0);
-        totalDiscount += product.discount * (item.totalQtyBuying || 0);
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-    // res.json({
-    //   message: "Order Details",
-    //   order,
-    // });
+  
+    res.json({
+      id:orderId,
+      orderConfirmedDate: order.createdAt,
+      orderShippedDate:order.createdAt,
+      orderDeliveredDate:order.createdAt,
+      deliveryAddress: order.shippingAddress,
+      products: order.orderItems,
+      totalAmount: order.totalPrice,
+      deliveryFee: 40.0,
+      totalDiscount: order.totalDiscount,
+    });
   } catch (error) {
     console.error("Error fetching order:", error);
     res.status(500).json({ message: "Internal Server Error" });
