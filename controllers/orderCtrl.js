@@ -35,6 +35,9 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
       totalAmount += discountedPrice * (item.totalQtyBuying || 0);
       totalDiscount += product.discount * (item.totalQtyBuying || 0);
     }
+    console.log('=============totalAmount=======================');
+    console.log(totalAmount);
+    console.log('====================================');
   } catch (error) {
     console.error("Error fetching products:", error);
   }
@@ -59,19 +62,69 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
       console.error("Product not found for order item:", orderItem._id);
     }
   });
+  console.log('====================================');
+  console.log(order);
+  console.log('====================================');
   user.orders.push(order?._id);
   await user.save();
   res.json({
     message: "Order created successfully!",
     deliveryAddress: order.shippingAddress,
     products: order.orderItems,
-    totalAmount: order.totalPrice,
+    totalAmount: totalAmount,
     orderConfirmedDate: order.createdAt,
     deliveryFee: 40.0,
     totalDiscount:totalDiscount
   });
 });
 
+export const getSingleOrderCtrl = asyncHandler(async (req, res) => {
+  const orderId = req.params.id;
+
+console.log('====================================');
+console.log(orderId);
+console.log('====================================');
+  // Validate order ID
+  if (!orderId) {
+    throw new Error("Please provide order ID");
+  }
+
+  try {
+    const order = await Order.findById(orderId)
+    console.log('====================================');
+    console.log(order);
+    console.log('====================================');
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    console.log('====================================');
+    console.log(order.orderItems);
+    console.log('====================================');
+    let orderItems=order.orderItems
+
+    try {
+      for (const item of orderItems) {
+        const product = await Product.findById(item.productId);
+        console.log('=======================product=============');
+        console.log(product);
+        console.log('====================================');
+        const discountedPrice =
+          (product.price - product.discount || 0) * item.totalQtyBuying;
+        totalAmount += discountedPrice * (item.totalQtyBuying || 0);
+        totalDiscount += product.discount * (item.totalQtyBuying || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+    // res.json({
+    //   message: "Order Details",
+    //   order,
+    // });
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 
 export const getAllordersUserCtrl = asyncHandler(async (req, res) => {
