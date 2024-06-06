@@ -282,3 +282,59 @@ export const getDefaultShippingAddressCtrl = asyncHandler(async (req, res) => {
     defaultShippingAddress,
   });
 });
+
+export const updateDefaultShippingAddressCtrl = asyncHandler(
+  async (req, res) => {
+    try {
+      const userId = req.userAuthId;
+      const addressId = req.params.id;
+      const { name, phone, postalCode, state, city, houseNumber, roadName } = req.body;
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "User not found",
+        });
+      }
+
+      const existingAddressIndex = user.shippingAddresses.findIndex(
+        (address) => address._id.toString() === addressId
+      );
+
+      if (existingAddressIndex === -1) {
+        return res.status(404).json({
+          status: "error",
+          message: "Shipping address not found",
+        });
+      }
+
+      const addressToUpdate = user.shippingAddresses.splice(existingAddressIndex, 1)[0];
+
+      addressToUpdate.name = name || addressToUpdate.name;
+      addressToUpdate.phone = phone || addressToUpdate.phone;
+      addressToUpdate.postalCode = postalCode || addressToUpdate.postalCode;
+      addressToUpdate.state = state || addressToUpdate.state;
+      addressToUpdate.city = city || addressToUpdate.city;
+      addressToUpdate.houseNumber = houseNumber || addressToUpdate.houseNumber;
+      addressToUpdate.roadName = roadName || addressToUpdate.roadName;
+
+      user.shippingAddresses.unshift(addressToUpdate);
+
+      const updatedUser = await user.save(); 
+
+      res.json({
+        status: "success",
+        message: "Default address changed successfully",
+        changedShippingAddress: updatedUser.shippingAddresses[0],
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        status: "error",
+        message: "Internal Server Error",
+      });
+    }
+  }
+);
