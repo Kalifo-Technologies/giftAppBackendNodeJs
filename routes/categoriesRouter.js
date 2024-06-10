@@ -1,5 +1,5 @@
 import exppress from "express";
-import catetgoryFileUpload from "../config/categoryUpload.js";
+import {catetgoryFileUpload} from "../config/categoryUpload.js"
 import {
   createCategoryCtrl,
   getAllCategoriesCtrl,
@@ -14,7 +14,7 @@ const categoriesRouter = exppress.Router();
 categoriesRouter.post(
   "/",
   isLoggedIn,
-  catetgoryFileUpload.single("file"),
+  catetgoryFileUpload.single("categoryImage"),
   createCategoryCtrl
 );
 categoriesRouter.get("/", getAllCategoriesCtrl);

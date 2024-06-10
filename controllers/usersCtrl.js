@@ -260,8 +260,10 @@ export const deleteShippingAddressCtrl = asyncHandler(async (req, res) => {
   }
 });
 
+// Controller to get the default shipping address
 export const getDefaultShippingAddressCtrl = asyncHandler(async (req, res) => {
   const user = await User.findById(req.userAuthId);
+
   if (!user) {
     return res.status(404).json({
       status: "error",
@@ -269,26 +271,60 @@ export const getDefaultShippingAddressCtrl = asyncHandler(async (req, res) => {
     });
   }
 
-  if (!user.hasShippingAddress) {
+  if (!user.shippingAddresses || user.shippingAddresses.length === 0) {
     return res.status(404).json({
       status: "error",
       message: "Shipping address not found for this user",
     });
   }
-  const shippingAddressArray = user.shippingAddresses;
-  const defaultShippingAddress = shippingAddressArray[0];
+
+  let defaultShippingAddress = user.shippingAddresses;
+
+  let x = user.shippingAddresses;
+  // console.log("=================xxxxxxxxxxxx===================");
+  // console.log(x.length);
+  // console.log("====================================");
+  if (x.length === 1) {
+    defaultShippingAddress = user.shippingAddresses[0];
+    // console.log("====================if condition================");
+    // console.log(defaultShippingAddress);
+    // console.log("====================================");
+  }
+  if (x.length > 1) {
+    defaultShippingAddress = user.shippingAddresses.find(
+      (address) => address.isDefault === true
+    );
+    // console.log("====================else condition================");
+    // console.log(defaultShippingAddress);
+    // console.log("====================================");
+  }
+  // console.log("==================defaultShippingAddress==================");
+  // console.log(defaultShippingAddress);
+  // console.log("====================================");
+
+  if (!defaultShippingAddress) {
+    return res.json({
+      status: "success",
+      message: "No default shipping address set",
+      defaultShippingAddress: null,
+    });
+  }
 
   res.json({
+    status: "success",
+    message: "Default shipping address found",
     defaultShippingAddress,
   });
 });
 
+// Controller to update the default shipping address
 export const updateDefaultShippingAddressCtrl = asyncHandler(
   async (req, res) => {
     try {
       const userId = req.userAuthId;
       const addressId = req.params.id;
-      const { name, phone, postalCode, state, city, houseNumber, roadName } = req.body;
+      const { name, phone, postalCode, state, city, houseNumber, roadName } =
+        req.body;
 
       const user = await User.findById(userId);
 
@@ -310,8 +346,13 @@ export const updateDefaultShippingAddressCtrl = asyncHandler(
         });
       }
 
-      const addressToUpdate = user.shippingAddresses.splice(existingAddressIndex, 1)[0];
+      // Unset the default flag for all addresses
+      user.shippingAddresses.forEach((address) => {
+        address.isDefault = false;
+      });
 
+      // Update the specified address and set it as the default
+      const addressToUpdate = user.shippingAddresses[existingAddressIndex];
       addressToUpdate.name = name || addressToUpdate.name;
       addressToUpdate.phone = phone || addressToUpdate.phone;
       addressToUpdate.postalCode = postalCode || addressToUpdate.postalCode;
@@ -319,15 +360,23 @@ export const updateDefaultShippingAddressCtrl = asyncHandler(
       addressToUpdate.city = city || addressToUpdate.city;
       addressToUpdate.houseNumber = houseNumber || addressToUpdate.houseNumber;
       addressToUpdate.roadName = roadName || addressToUpdate.roadName;
+      addressToUpdate.isDefault = true;
 
-      user.shippingAddresses.unshift(addressToUpdate);
+      // Save the updated address back to the user's addresses array
+      user.shippingAddresses[existingAddressIndex] = addressToUpdate;
 
-      const updatedUser = await user.save(); 
+      // Save the updated user to the database
+      const updatedUser = await user.save();
+
+      // Find the updated default shipping address
+      const defaultShippingAddress = updatedUser.shippingAddresses.find(
+        (address) => address.isDefault
+      );
 
       res.json({
         status: "success",
         message: "Default address changed successfully",
-        changedShippingAddress: updatedUser.shippingAddresses[0],
+        defaultShippingAddress,
       });
     } catch (error) {
       console.error(error);

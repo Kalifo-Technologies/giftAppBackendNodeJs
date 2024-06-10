@@ -1,26 +1,31 @@
-import cloudinaryPackage from "cloudinary";
-
 import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 
-//configure cloudinary
-const cloudinary = cloudinaryPackage.v2;
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET_KEY,
-});
-
-// Create storage engine for Multer
-const storage = new CloudinaryStorage({
-  cloudinary,
-  allowedFormats: ["jpg", "png"],
-  params: {
-    folder: "blog-api",
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/categories/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
   },
 });
 
-// Init Multer with the storage engine
-const catetgoryFileUpload = multer({ storage: storage });
+const catetgoryFileUpload = multer({
+  storage: storage,
+  fileFilter: function (req, file, callback) { 
+    if (
+      file.mimetype === "image/png" ||
+      file.mimetype === "image/jpeg" ||
+      file.mimetype === "image/jpg" ||
+      file.mimetype === "image/webp"
+    ) {
+      callback(null, true);
+    } else {
+      console.log("Only JPG, JPEG, PNG, and WEBP files are supported!");
+      callback(null, false);
+    }
+  },
+});
 
-export default catetgoryFileUpload;
+export { catetgoryFileUpload };
+
+

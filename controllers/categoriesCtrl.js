@@ -3,7 +3,16 @@ import Category from "../model/Category.js";
 
 export const createCategoryCtrl = asyncHandler(async (req, res) => {
   try {
+    console.log('====================================');
+    console.log("111111111");
+    console.log('====================================');
     const { name } = req.body;
+    const regularImages = req.files["categoryImage"]
+      ? req.files["categoryImage"].map((file) => file.path)
+      : [];
+      console.log('====================================');
+      console.log(regularImages);
+      console.log('====================================');
     const categoryFound = await Category.findOne({ name });
     if (categoryFound) {
       res.status(409).json({
@@ -33,7 +42,6 @@ export const createCategoryCtrl = asyncHandler(async (req, res) => {
   }
 });
 
-
 export const getAllCategoriesCtrl = asyncHandler(async (req, res) => {
   try {
     const categories = await Category.find().populate("products");
@@ -43,7 +51,7 @@ export const getAllCategoriesCtrl = asyncHandler(async (req, res) => {
       categories,
     });
   } catch (error) {
-    console.error(error); 
+    console.error(error);
     res.status(500).json({
       status: "error",
       message: "Internal Server Error",
@@ -76,7 +84,6 @@ export const getSingleCategoryCtrl = asyncHandler(async (req, res) => {
     });
   }
 });
-
 
 export const updateCategoryCtrl = asyncHandler(async (req, res) => {
   try {

@@ -296,8 +296,12 @@ export const updateProductCtrl = asyncHandler(async (req, res) => {
     tags,
   } = req.body;
 
-  const mainImage = req.files["mainImage"] ? req.files["mainImage"][0].path : null;
-  const regularImages = req.files["regularImages"] ? req.files["regularImages"].map((file) => file.path) : [];
+  const mainImage = req.files["mainImage"]
+    ? req.files["mainImage"][0].path
+    : null;
+  const regularImages = req.files["regularImages"]
+    ? req.files["regularImages"].map((file) => file.path)
+    : [];
 
   const productId = req.params.id;
 
