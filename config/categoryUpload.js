@@ -1,31 +1,22 @@
-import multer from "multer";
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+
+const uploadDir = 'public/categories/';
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/categories/");
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
   },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
 });
 
-const catetgoryFileUpload = multer({
-  storage: storage,
-  fileFilter: function (req, file, callback) { 
-    if (
-      file.mimetype === "image/png" ||
-      file.mimetype === "image/jpeg" ||
-      file.mimetype === "image/jpg" ||
-      file.mimetype === "image/webp"
-    ) {
-      callback(null, true);
-    } else {
-      console.log("Only JPG, JPEG, PNG, and WEBP files are supported!");
-      callback(null, false);
-    }
-  },
-});
+const upload = multer({ storage: storage });
 
-export { catetgoryFileUpload };
-
-
+export default upload;

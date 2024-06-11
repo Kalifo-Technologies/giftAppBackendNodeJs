@@ -1,5 +1,5 @@
-import exppress from "express";
-import {catetgoryFileUpload} from "../config/categoryUpload.js"
+// categoriesRouter.js
+import express from "express";
 import {
   createCategoryCtrl,
   getAllCategoriesCtrl,
@@ -8,13 +8,16 @@ import {
   deleteCategoryCtrl,
 } from "../controllers/categoriesCtrl.js";
 import { isLoggedIn } from "../middlewares/isLoggedIn.js";
+import isAdmin from "../middlewares/isAdmin.js";
+import upload from "../config/categoryUpload.js";
 
-const categoriesRouter = exppress.Router();
+const categoriesRouter = express.Router();
 
 categoriesRouter.post(
   "/",
   isLoggedIn,
-  catetgoryFileUpload.single("categoryImage"),
+  isAdmin,
+  upload.single("categoryImage"),
   createCategoryCtrl
 );
 categoriesRouter.get("/", getAllCategoriesCtrl);

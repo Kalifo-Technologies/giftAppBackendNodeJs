@@ -7,6 +7,7 @@ const CategorySchema = new Schema(
       type: String,
       required: true,
     },
+    specifiedFor: [{ type: String, required: true }],
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -14,7 +15,6 @@ const CategorySchema = new Schema(
     },
     image: {
       type: String,
-      default:"https://picsum/photos/200/300",
       required: true,
     },
     products: [
@@ -24,9 +24,10 @@ const CategorySchema = new Schema(
       },
     ],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const Category = mongoose.model("Category", CategorySchema);
-
 export default Category;

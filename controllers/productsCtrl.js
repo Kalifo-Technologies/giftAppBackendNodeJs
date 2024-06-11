@@ -54,6 +54,13 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     );
   }
 
+  const categoryFound = await Category.findById(category);
+  if (!categoryFound) {
+    throw new Error(
+      "Category not found, please create category first or check category ID"
+    );
+  }
+
   const product = await Product.create({
     name,
     description,
@@ -77,25 +84,33 @@ export const createProductCtrl = asyncHandler(async (req, res) => {
     mainImage: mainImage,
   });
 
-  brandFound.products.push(product._id);
-  await brandFound.save();
+  try {
+    
 
-  const productResponse = product.toObject();
-  delete productResponse._id;
-  delete productResponse.user;
-  delete productResponse.mainImages;
-  delete productResponse.createdAt;
-  delete productResponse.updatedAt;
-  delete productResponse.__v;
+    brandFound.products.push(product._id);
+    await brandFound.save();
+    categoryFound.products.push(product._id);
+    await categoryFound.save();
+    const productResponse = product.toObject();
+    delete productResponse._id;
+    delete productResponse.user;
+    delete productResponse.mainImages;
+    delete productResponse.createdAt;
+    delete productResponse.updatedAt;
+    delete productResponse.__v;
+    productResponse.totalReviews = product.reviews.length;
+    let qtyLeft = 98;
+    productResponse.qtyLeft = qtyLeft;
 
-  productResponse.totalReviews = product.reviews.length;
-  let qtyLeft = 98;
-  productResponse.qtyLeft = qtyLeft;
-
-  res.json({
-    ...productResponse,
-  });
+    res.json({
+      ...productResponse,
+    });
+  } catch (error) {
+    console.error("Error updating brand or category with new product:", error);
+    throw new Error("Error updating brand or category with new product");
+  }
 });
+
 
 export const getProductsCtrl = asyncHandler(async (req, res) => {
   let productQuery = Product.find();
@@ -219,61 +234,6 @@ export const getProductCtrl = asyncHandler(async (req, res) => {
     });
   }
 });
-
-// export const updateProductCtrl = asyncHandler(async (req, res) => {
-//   const {
-//     name,
-//     description,
-//     category,
-//     sizes,
-//     colors,
-//     user,
-//     price,
-//     totalQty,
-//     brand,
-//     originalPrice,
-//     discount,
-//     details,
-//     totalSold,
-//     tags,
-//     images,
-//     mainImage,
-//   } = req.body;
-//   console.log('====================================');
-//   console.log(req.body);
-//   console.log('====================================');
-
-//   const product = await Product.findByIdAndUpdate(
-//     req.params.id,
-//     {
-//       name,
-//       description,
-//       category,
-//       sizes,
-//       colors,
-//       user,
-//       price,
-//       totalQty,
-//       brand,
-//       originalPrice,
-//       discount,
-//       details,
-//       totalSold,
-//       tags,
-//       images,
-//       mainImage,
-//     },
-//     {
-//       new: true,
-//       runValidators: true,
-//     }
-//   );
-//   res.json({
-//     status: "success",
-//     message: "Product updated successfully",
-//     product,
-//   });
-// });
 
 export const updateProductCtrl = asyncHandler(async (req, res) => {
   const {
