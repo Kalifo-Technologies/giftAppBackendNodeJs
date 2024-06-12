@@ -59,17 +59,17 @@ export const registerUserCtrl = asyncHandler(async (req, res) => {
     });
   }
 });
-
 export const loginUserCtrl = asyncHandler(async (req, res) => {
   try {
     const { email, password } = req.body;
     const userFound = await User.findOne({ email });
 
     if (userFound && (await bcrypt.compare(password, userFound?.password))) {
+      const { _id, userName, email, phoneNumber,password,confirmPassword, orders, wishLists, isAdmin, hasShippingAddress, shippingAddresses, createdAt, updatedAt } = userFound;
       res.json({
         status: "success",
         message: "User logged in successfully",
-        userFound,
+        userFound: { _id, userName, email, phoneNumber,password, orders,confirmPassword, wishLists, isAdmin, hasShippingAddress, shippingAddresses, createdAt, updatedAt },
         token: generateToken(userFound?._id),
       });
     } else {
