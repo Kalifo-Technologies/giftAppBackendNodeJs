@@ -1,33 +1,6 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-// const AddressSchema = new Schema({
-//   name: {
-//     type: String,
-//   },
-//   phone: {
-//     type: String,
-//   },
-//   postalCode: {
-//     type: String,
-//   },
-//   state: {
-//     type: String,
-//   },
-//   city: {
-//     type: String,
-//   },
-//   houseNumber: {
-//     type: String,
-//   },
-//   roadName: {
-//     type: String,
-//   },
-//   isSelected: {
-//     type: Boolean,
-//     default: false,
-//   },
-// });
 const AddressSchema = new Schema({
   name: {
     type: String,
@@ -50,16 +23,11 @@ const AddressSchema = new Schema({
   roadName: {
     type: String,
   },
-  isSelected: { // Remove or rename if not used
-    type: Boolean,
-    default: false,
-  },
   isDefault: {
     type: Boolean,
     default: false,
   },
 });
-
 
 const UserSchema = new Schema(
   {
@@ -104,6 +72,14 @@ const UserSchema = new Schema(
       default: false,
     },
     shippingAddresses: [AddressSchema],
+    profilePicture: {
+      type: String,
+      default: null,
+    },
+    dateOfBirth: {
+      type: Date,
+      required: true,
+    },
   },
   {
     timestamps: true,

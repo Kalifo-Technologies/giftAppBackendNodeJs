@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
 import { getTokenFromHeader } from "../utils/getTokenFromHeader.js";
 import { verifyToken } from "../utils/verifyToken.js";
+import fs from "fs";
+import path from "path";
 
 export const registerUserCtrl = asyncHandler(async (req, res) => {
   try {
@@ -387,3 +389,162 @@ export const updateDefaultShippingAddressCtrl = asyncHandler(
     }
   }
 );
+
+export const deleteUserAccountCtrl = async (req, res) => {
+  try {
+    const userId = req.userAuthId;
+    await User.findByIdAndDelete(userId);
+    res.status(200).json({ message: "User account deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting user account", error });
+  }
+};
+
+// Define the controller for adding a profile picture
+export const addProfilePictureCtrl = async (req, res) => {
+  try {
+    const userId = req.userAuthId;
+    const profilePicturePath = req.file ? req.file.path : null;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    user.profilePicture = profilePicturePath;
+    await user.save();
+
+    res.status(200).json({
+      profilePicture: profilePicturePath,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding profile picture", error });
+  }
+};
+// Define the controller for update the profile picture
+
+export const updateProfilePictureCtrl = async (req, res) => {
+  try {
+    const userId = req.userAuthId;
+    const newProfilePicturePath = req.file ? req.file.path : null;
+
+    console.log("New Profile Picture Path:", newProfilePicturePath);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("User found:", user);
+
+    // Delete the old profile picture if it exists
+    if (user.profilePicture) {
+      console.log("Old Profile Picture Path:", user.profilePicture);
+      const oldProfilePicturePath = path.resolve(user.profilePicture);
+      fs.unlink(oldProfilePicturePath, (err) => {
+        if (err) {
+          console.error("Failed to delete old profile picture:", err);
+        } else {
+          console.log("Old profile picture deleted successfully");
+        }
+      });
+    }
+
+    user.profilePicture = newProfilePicturePath;
+    await user.save();
+
+    res.status(200).json({
+      profilePicture: newProfilePicturePath,
+    });
+  } catch (error) {
+    console.error("Error updating profile picture:", error);
+    res.status(500).json({
+      message: "Error updating profile picture",
+      error: error.message || error,
+    });
+  }
+};
+
+// Define the controller for getting the profile picture path
+export const getProfilePictureCtrl = async (req, res) => {
+  try {
+    const userId = req.userAuthId;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.profilePicture) {
+      return res.status(404).json({ message: "Profile picture not found" });
+    }
+
+    res.json({ profilePicturePath: user.profilePicture });
+  } catch (error) {
+    console.error("Error retrieving profile picture path:", error);
+    res.status(500).json({
+      message: "Error retrieving profile picture path",
+      error: error.message || error,
+    });
+  }
+};
+
+// Define the controller for adding date of birth
+export const addDateOfBirthCtrl = async (req, res) => {
+  try {
+    const userId = req.userAuthId;
+    const { dateOfBirth } = req.body;
+
+    if (!isValidDate(dateOfBirth)) {
+      return res.status(400).json({ message: "Invalid date of birth" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.dateOfBirth = new Date(dateOfBirth);
+    await user.save();
+
+    res.status(200).json({
+      message: "Date of birth added successfully",
+      dateOfBirth: user.dateOfBirth,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding date of birth", error });
+  }
+};
+
+const isValidDate = (dateString) => {
+  const regEx = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateString.match(regEx)) return false;
+  const d = new Date(dateString);
+  const dNum = d.getTime();
+  if (!dNum && dNum !== 0) return false;
+  return d.toISOString().slice(0, 10) === dateString;
+};
+
+export const updateDateOfBirthCtrl = async (req, res) => {
+  try {
+    const userId = req.userAuthId;
+    const { dateOfBirth } = req.body;
+    if (!isValidDate(dateOfBirth)) {
+      return res.status(400).json({ message: "Invalid date of birth" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.dateOfBirth = new Date(dateOfBirth);
+    await user.save();
+
+    res.status(200).json({
+      message: "Date of birth updated successfully",
+      dateOfBirth: user.dateOfBirth,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating date of birth", error });
+  }
+};
